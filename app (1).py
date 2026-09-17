@@ -13,6 +13,8 @@ from PIL import Image, ImageDraw, ImageFont
 st.set_page_config(page_title="Sistem Master Material PT BIMA", page_icon="⚓", layout="wide", initial_sidebar_state="expanded")
 
 SHEET_ID = "1HctNbWWRcv8--qzrjS6Bn7hYoNvZypwNaqB1tycvDQ8"
+SPREADSHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/edit"
+ALLOW_DEMO_LOGIN = False
 LOGIN_SHEET = "Data Username + Password"
 ACTIVITY_SHEET = "Data Aktivitas Terkini"
 REQUEST_SHEET = "Data Permohonan Material"
@@ -36,30 +38,66 @@ def asset_image(key): return Image.open(io.BytesIO(base64.b64decode(ASSET_B64[ke
 
 # ---------- Google Sheets adapter ----------
 @st.cache_resource
+@st.cache_resource(show_spinner=False)
 def get_book():
+    """Buka spreadsheet utama memakai Service Account dari Streamlit Secrets.
+
+    Catatan: kepemilikan spreadsheet oleh akun Gmail pribadi tidak otomatis
+    memberi akses kepada aplikasi. Google Sheets harus dibagikan ke
+    `client_email` service account yang ada di st.secrets.
+    """
     try:
         import gspread
         from google.oauth2.service_account import Credentials
+        if "gcp_service_account" not in st.secrets:
+            return None
         info = dict(st.secrets["gcp_service_account"])
-        creds = Credentials.from_service_account_info(info, scopes=["https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive"])
+        required = ["type", "project_id", "private_key", "client_email", "token_uri"]
+        if any(not str(info.get(k, "")).strip() for k in required):
+            return None
+        creds = Credentials.from_service_account_info(
+            info,
+            scopes=[
+                "https://www.googleapis.com/auth/spreadsheets",
+                "https://www.googleapis.com/auth/drive",
+            ],
+        )
         return gspread.authorize(creds).open_by_key(SHEET_ID)
     except Exception:
         return None
 
-def ws_df(name):
+def sheets_status():
+    """Status ringkas koneksi untuk membantu deployment."""
+    try:
+        book = get_book()
+        if book is not None:
+            return True, f"Terhubung ke Google Sheets: {book.title}"
+        # Coba baca sheet login lewat endpoint CSV jika spreadsheet memang publik.
+        df = ws_df(LOGIN_SHEET, _status_probe=True)
+        if not df.empty:
+            return True, "Sheet login dapat dibaca melalui akses publik (read-only)."
+        return False, "Google Sheets belum dapat diakses oleh aplikasi. Pastikan Secrets benar dan spreadsheet dibagikan ke client_email service account sebagai Editor."
+    except Exception as e:
+        return False, f"Koneksi Google Sheets gagal: {e}"
+
+def ws_df(name, _status_probe=False):
     book=get_book()
     if book:
         try:
             ws=book.worksheet(name)
             values=ws.get_all_values()
-            if not values: return pd.DataFrame()
-            return pd.DataFrame(values[1:], columns=values[0])
-        except Exception: pass
-    # Read-only public CSV fallback
+            if not values:
+                return pd.DataFrame()
+            # Buang header kosong agar mapping kolom login lebih stabil.
+            headers=[str(h).strip() for h in values[0]]
+            return pd.DataFrame(values[1:], columns=headers)
+        except Exception:
+            pass
+    # Fallback baca-only. Ini hanya berhasil jika spreadsheet/sheet dapat diakses publik.
     try:
         import urllib.parse
         url=f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={urllib.parse.quote(name)}"
-        return pd.read_csv(url)
+        return pd.read_csv(url, dtype=str).fillna("")
     except Exception:
         return pd.DataFrame()
 
@@ -154,8 +192,8 @@ div[data-testid="stButton"] button {{border-radius:9px;font-weight:700}}
 def verify_login(username,password):
     df=ws_df(LOGIN_SHEET)
     if df.empty:
-        # Safe demo account only when Sheet cannot be read.
-        if username=="demo" and password=="demo": return {"username":"demo","name":"Budi Santoso","role":ROLES[0],"area":"Area 1","email":"demo@ptbima.co.id"}
+        if ALLOW_DEMO_LOGIN and username=="demo" and password=="demo":
+            return {"username":"demo","name":"Budi Santoso","role":ROLES[0],"area":"Area 1","email":"demo@ptbima.co.id"}
         return None
     ucol=find_col(df,["Username","User Name","user"]); pcol=find_col(df,["Password","Pass"])
     rcol=find_col(df,["Role","Peran","Kelompok"]); ncol=find_col(df,["Nama","Nama Lengkap","Name"]); acol=find_col(df,["Area","Area Kerja"]); ecol=find_col(df,["Email","E-mail"])
@@ -187,9 +225,22 @@ def login_page():
             go=st.form_submit_button("Masuk  →",use_container_width=True,type="primary")
             if go:
                 user=verify_login(u,p)
-                if user: st.session_state.user=user; st.session_state.page="Dashboard"; st.rerun()
-                else: st.error("Username atau password tidak valid.")
-        st.caption("Jika Google Sheets belum terhubung, akun demo: demo / demo")
+                if user:
+                    st.session_state.user=user
+                    st.session_state.page="Dashboard"
+                    st.rerun()
+                else:
+                    login_df = ws_df(LOGIN_SHEET)
+                    if login_df.empty:
+                        st.error("Data login belum dapat dibaca dari Google Sheets. Periksa koneksi Service Account dan nama sheet 'Data Username + Password'.")
+                    else:
+                        st.error("Username atau password tidak valid.")
+        ok, msg = sheets_status()
+        if ok:
+            st.success(msg, icon="✅")
+        else:
+            st.warning(msg, icon="⚠️")
+        st.caption(f"Sumber data login: {LOGIN_SHEET} | Spreadsheet ID: {SHEET_ID}")
     with c:
         st.image(asset_image('bima'),width=180)
         st.markdown("<div style='margin-top:310px;text-align:right;color:#3f7eaa;font-size:13px'>SISTEM<br><b>MASTER MATERIAL</b><br>PT BIMA</div>",unsafe_allow_html=True)
