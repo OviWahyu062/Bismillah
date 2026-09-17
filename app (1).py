@@ -193,14 +193,28 @@ html,body,.stApp{{background:var(--c-bg)!important;color:var(--c-text)!important
 .mm-bell:after{{content:'1';position:absolute;right:-1px;top:-2px;background:#ef4a43;color:#fff;width:10px;height:10px;border-radius:50%;font-size:6px;line-height:10px;text-align:center;font-weight:700}}
 .mm-sidebar{{position:fixed;z-index:9999;left:0;top:var(--top);bottom:0;width:var(--side);border-right:1px solid #d5e5f1;background:#edf7fd url('{data_uri('sidebar')}') left bottom/100% 100% no-repeat;overflow:hidden}}
 .mm-nav{{padding-top:0}}
-.mm-nav a{{position:relative;display:flex;align-items:center;gap:8px;height:43px;padding:0 14px;color:#315a7c;text-decoration:none;font-size:9px;font-weight:600;border-radius:0;margin:0;border-bottom:1px solid rgba(220,233,243,.5)}}
-.mm-nav a:hover{{background:rgba(255,255,255,.55);color:#0a6ebd}}
-.mm-nav a.active{{background:linear-gradient(90deg,#0b61ad 0%,#0c72c4 100%);color:#fff}}
+.mm-nav-item{{position:relative;display:flex;align-items:center;gap:8px;height:43px;padding:0 14px;color:#315a7c;text-decoration:none;font-size:9px;font-weight:600;border-radius:0;margin:0;border-bottom:1px solid rgba(220,233,243,.5);pointer-events:none}}
+.mm-nav-item.active{{background:linear-gradient(90deg,#0b61ad 0%,#0c72c4 100%);color:#fff}}
 .mm-nav .ico{{width:15px;height:15px;display:flex;align-items:center;justify-content:center;flex:0 0 15px}}
 .mm-nav .ico svg{{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}}
 .mm-badge{{margin-left:auto;background:#f4a100;color:#fff;border-radius:999px;min-width:15px;height:15px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800}}
 .mm-side-slogan{{position:absolute;left:14px;bottom:31%;font-size:11px;line-height:1.06;color:#4f84af;font-weight:500;text-transform:uppercase;letter-spacing:.01em}}
 .mm-side-foot{{display:none}}
+/* Native Streamlit buttons are used only as an invisible click layer over the custom sidebar.
+   This preserves session_state because navigation no longer reloads the browser. */
+div[data-testid="stVerticalBlock"]:has(#mm-nav-click-layer){{
+  position:fixed!important;z-index:10020!important;left:0!important;top:var(--top)!important;
+  width:var(--side)!important;padding:0!important;margin:0!important;gap:0!important;
+  background:transparent!important;pointer-events:none!important;
+}}
+div[data-testid="stVerticalBlock"]:has(#mm-nav-click-layer) > div:has(#mm-nav-click-layer){{display:none!important;height:0!important;margin:0!important;padding:0!important}}
+div[data-testid="stVerticalBlock"]:has(#mm-nav-click-layer) .stButton{{height:43px!important;min-height:43px!important;margin:0!important;padding:0!important;pointer-events:auto!important}}
+div[data-testid="stVerticalBlock"]:has(#mm-nav-click-layer) .stButton > button{{
+  width:100%!important;height:43px!important;min-height:43px!important;margin:0!important;padding:0!important;
+  border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;
+  opacity:0!important;cursor:pointer!important;
+}}
+div[data-testid="stVerticalBlock"]:has(#mm-nav-click-layer) .stButton > button:hover{{background:transparent!important}}
 /* page header */
 .mm-pagehead{{display:flex;justify-content:space-between;align-items:flex-start;margin:0 0 10px}}
 .mm-title{{font-size:25px;line-height:1;font-weight:800;color:#163f68;letter-spacing:-.035em;margin:0 0 3px}}
@@ -329,10 +343,11 @@ menus=["Dashboard","Form Permintaan Material"]
 if level==0: menus += ["Riwayat Permohonan"]
 if level>0: menus += ["Approval Workspace"]
 menus += ["Dokumen Persetujuan","Profile"]
-qpage = st.query_params.get("page") if hasattr(st, "query_params") else None
-if isinstance(qpage, list): qpage=qpage[0] if qpage else None
-if qpage in menus: st.session_state.page=qpage
-if "page" not in st.session_state or st.session_state.page not in menus: st.session_state.page=menus[0]
+# IMPORTANT: page navigation must stay inside the active Streamlit session.
+# Do not use href/query-string navigation here because a normal browser reload
+# creates a new Streamlit session and clears the authenticated session_state.
+if "page" not in st.session_state or st.session_state.page not in menus:
+    st.session_state.page=menus[0]
 page=st.session_state.page
 icons={
 "Dashboard":"<svg viewBox='0 0 24 24'><path d='M3 11.5 12 4l9 7.5'/><path d='M5.5 10.5V20h13v-9.5'/><path d='M9.5 20v-6h5v6'/></svg>",
@@ -346,7 +361,7 @@ nav_html=[]
 for m in menus:
     active=" active" if page==m else ""
     badge="<span class='mm-badge'>2</span>" if m=="Approval Workspace" else ""
-    nav_html.append(f"<a class='{active.strip()}' href='?page={m.replace(' ','%20')}' target='_self'><span class='ico'>{icons.get(m,'')}</span><span>{html.escape(m)}</span>{badge}</a>")
+    nav_html.append(f"<div class='mm-nav-item{active}'><span class='ico'>{icons.get(m,'')}</span><span>{html.escape(m)}</span>{badge}</div>")
 initials=''.join([x[:1] for x in str(user.get('name','U')).split()[:2]]).upper() or 'U'
 st.markdown(f"""
 <div class='mm-topbar'>
@@ -367,6 +382,15 @@ st.markdown(f"""
   <div class='mm-side-slogan'>SINERGI<br>UNTUK LAUTAN<br>INDONESIA</div>
 </div>
 """,unsafe_allow_html=True)
+
+# Invisible native navigation buttons laid exactly over the visual sidebar.
+# st.button triggers a Streamlit rerun on the SAME websocket session, so login persists.
+with st.container():
+    st.markdown("<div id='mm-nav-click-layer'></div>", unsafe_allow_html=True)
+    for _menu in menus:
+        if st.button(_menu, key=f"navbtn_{re.sub(r'[^A-Za-z0-9]+','_',_menu)}", use_container_width=True):
+            st.session_state.page = _menu
+            st.rerun()
 
 # ---------- Helpers ----------
 def canonical(df):
