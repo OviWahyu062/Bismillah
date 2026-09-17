@@ -10,7 +10,7 @@ import io, os, base64, hashlib, hmac, textwrap, re, html
 from datetime import datetime, date
 from PIL import Image, ImageDraw, ImageFont
 
-st.set_page_config(page_title="Sistem Master Material PT BIMA", page_icon="⚓", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Sistem Master Material PT BIMA", page_icon="⚓", layout="wide", initial_sidebar_state="collapsed")
 
 SHEET_ID = "1HctNbWWRcv8--qzrjS6Bn7hYoNvZypwNaqB1tycvDQ8"
 SPREADSHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/edit"
@@ -173,85 +173,93 @@ def requests_df():
 # ---------- Styling ----------
 st.markdown(f"""
 <style>
-:root{{--mm-blue:#066fbe;--mm-blue2:#1395df;--mm-navy:#0d3f72;--mm-text:#193c5e;--mm-line:#dce9f4;--mm-bg:#f5faff;}}
-#MainMenu, footer, header[data-testid="stHeader"] {{visibility:hidden;height:0}}
-html,body,[class*="css"] {{font-family:Inter,Segoe UI,Arial,sans-serif}}
-.stApp {{background:linear-gradient(135deg,#f8fcff 0%,#f0f7fd 100%);color:var(--mm-text)}}
-.block-container {{padding:76px 18px 24px 18px;max-width:1550px}}
-/* left navigation, deliberately narrow like the supplied mockup */
-[data-testid="stSidebar"] {{width:208px!important;min-width:208px!important;background:#eef7fd url('{data_uri('sidebar')}') left bottom/100% auto no-repeat;border-right:1px solid #d8e8f4;box-shadow:none}}
-[data-testid="stSidebar"] .block-container {{padding:75px 10px 18px 10px}}
-[data-testid="stSidebar"] [data-testid="stImage"] {{display:none}}
-[data-testid="stSidebar"] [data-testid="stCaptionContainer"] {{display:none}}
-[data-testid="stSidebar"] div[data-testid="stButton"] {{margin:0 0 4px 0}}
-[data-testid="stSidebar"] div[data-testid="stButton"] button {{height:44px;border-radius:4px;font-size:12px;font-weight:600;border:0;box-shadow:none;justify-content:flex-start;padding:0 12px}}
-[data-testid="stSidebar"] div[data-testid="stButton"] button[kind="primary"] {{background:linear-gradient(90deg,#0569b4,#087fcf)!important;color:white!important}}
-[data-testid="stSidebar"] div[data-testid="stButton"] button[kind="secondary"] {{background:transparent!important;color:#315c82!important}}
-[data-testid="stSidebar"] div[data-testid="stButton"] button[kind="secondary"]:hover {{background:rgba(255,255,255,.7)!important;color:#046db9!important}}
-/* fixed corporate top bar */
-.mm-topbar {{position:fixed;z-index:999;left:0;top:0;right:0;height:64px;background:rgba(255,255,255,.97);border-bottom:1px solid #d9e8f3;display:flex;align-items:center;justify-content:space-between;padding:0 22px 0 18px;box-shadow:0 2px 8px rgba(28,75,115,.05)}}
-.mm-topbar-left {{display:flex;align-items:center;gap:16px}}
-.mm-topbar-left img:first-child {{height:31px;width:auto}}
-.mm-topbar-left img:last-child {{height:33px;width:auto}}
-.mm-top-sep {{width:1px;height:31px;background:#c7d8e6}}
-.mm-user {{display:flex;align-items:center;gap:9px;color:#56718a;font-size:11px;line-height:1.25}}
-.mm-avatar {{width:32px;height:32px;border-radius:50%;background:#0d568e;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}}
-.mm-bell {{position:relative;font-size:18px;color:#245a84;margin-right:8px}}
-.mm-bell:after {{content:'1';position:absolute;right:-5px;top:-5px;background:#f44336;color:#fff;width:14px;height:14px;border-radius:50%;font-size:8px;display:flex;align-items:center;justify-content:center;font-weight:700}}
-.mm-pagehead {{display:flex;justify-content:space-between;align-items:flex-start;margin:0 0 12px}}
-.mm-title {{font-size:31px;line-height:1;font-weight:800;color:#123f6b;letter-spacing:-.03em;margin:0 0 3px}}
-.mm-sub {{font-size:12px;color:#6d879f;margin:0}}
-.mm-period {{background:#fff;border:1px solid #d9e7f2;border-radius:7px;padding:7px 10px;min-width:170px;color:#315a7e;font-size:11px;box-shadow:0 1px 4px rgba(30,75,110,.03)}}
-.mm-card {{background:#fff;border:1px solid #dfeaf3;border-radius:9px;box-shadow:0 2px 8px rgba(42,86,122,.04)}}
-.mm-kpi-grid {{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:10px}}
-.mm-kpi-card {{position:relative;background:#fff;border:1px solid #dfeaf3;border-radius:8px;padding:12px 14px;min-height:100px;box-shadow:0 2px 8px rgba(42,86,122,.04);overflow:hidden}}
-.mm-kpi-card:before {{content:'';position:absolute;left:0;top:0;width:100%;height:3px;background:var(--accent)}}
-.mm-kpi-flex {{display:flex;align-items:flex-start;gap:11px}}
-.mm-kpi-icon {{width:38px;height:38px;border-radius:8px;background:var(--soft);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:20px;flex:0 0 auto}}
-.mm-kpi-label {{font-size:9px;font-weight:800;color:#49647e;text-transform:uppercase;margin-top:1px}}
-.mm-kpi-value {{font-size:28px;font-weight:800;color:#123f6b;line-height:1.05;margin:4px 0 3px}}
-.mm-kpi-note {{font-size:9px;color:#71889b;line-height:1.25}}
-.mm-kpi-mini {{font-size:9px;color:#49647e;margin-top:4px;word-spacing:5px}}
-.mm-dashboard-grid {{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}}
-.mm-panel {{background:#fff;border:1px solid #dfeaf3;border-radius:8px;padding:12px 14px;box-shadow:0 2px 8px rgba(42,86,122,.04);min-height:230px}}
-.mm-panel.small {{min-height:185px}}
-.mm-panel-title {{font-size:14px;font-weight:800;color:#193f61;margin-bottom:1px}}
-.mm-panel-sub {{font-size:9px;color:#7890a3;margin-bottom:11px}}
-.mm-donut-wrap {{display:flex;align-items:center;gap:20px;padding:2px 8px 0}}
-.mm-donut {{width:145px;height:145px;border-radius:50%;position:relative;flex:0 0 auto}}
-.mm-donut-hole {{position:absolute;inset:31px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#123f6b}}
-.mm-donut-hole b {{font-size:25px;line-height:1}}
-.mm-donut-hole span {{font-size:9px;color:#738aa0;margin-top:4px}}
-.mm-legend {{flex:1;font-size:9px;color:#284c6e}}
-.mm-legend-row {{display:grid;grid-template-columns:10px 1fr auto;gap:6px;align-items:center;margin:8px 0}}
-.mm-dot {{width:8px;height:8px;border-radius:50%}}
-.mm-bars {{height:154px;display:flex;align-items:flex-end;gap:23px;padding:12px 10px 22px 28px;border-left:1px solid #e7eef4;border-bottom:1px solid #e7eef4;background:repeating-linear-gradient(to top,transparent 0,transparent 29px,#edf3f7 30px)}}
-.mm-bar-col {{flex:1;text-align:center;position:relative;height:100%;display:flex;align-items:flex-end;justify-content:center}}
-.mm-vbar {{width:54px;max-width:70%;border-radius:4px 4px 0 0;background:linear-gradient(#2b9ce9,#0873c5);position:relative}}
-.mm-vbar.alt {{background:linear-gradient(#76c1f2,#59a8e1)}}
-.mm-vbar b {{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:10px;color:#244d70}}
-.mm-xlabel {{position:absolute;bottom:-18px;font-size:9px;color:#546f87;white-space:nowrap}}
-.mm-hbars {{padding:4px 3px}}
-.mm-hrow {{display:grid;grid-template-columns:85px 1fr 30px;gap:7px;align-items:center;margin:8px 0;font-size:9px;color:#476681}}
-.mm-htrack {{height:10px;background:#edf5fb;border-radius:3px;overflow:hidden}}
-.mm-hfill {{height:100%;border-radius:3px;background:linear-gradient(90deg,#0876c6,#4aa9e9)}}
-.mm-insights {{background:linear-gradient(180deg,#f5fbff,#eef8ff);border-radius:6px;padding:5px 8px}}
-.mm-insight {{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #dfeef8;font-size:9px;color:#315a7d;line-height:1.35}}
-.mm-insight:last-child {{border-bottom:0}}
-.mm-num {{width:20px;height:20px;border-radius:50%;background:#0b70bd;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:9px}}
-.mm-activity {{background:#fff;border:1px solid #dfeaf3;border-radius:8px;padding:12px 14px;box-shadow:0 2px 8px rgba(42,86,122,.04)}}
-.mm-activity-head {{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px}}
-.mm-link {{font-size:9px;color:#0678c8;font-weight:700}}
-.mm-table {{width:100%;border-collapse:separate;border-spacing:0;font-size:8.5px;color:#365a78}}
-.mm-table th {{background:#f2f7fb;color:#617b92;text-align:left;padding:7px 7px;font-size:7.5px;text-transform:uppercase;border-top:1px solid #e5edf4;border-bottom:1px solid #e5edf4}}
-.mm-table td {{padding:7px;border-bottom:1px solid #edf2f6;background:#fff}}
-.mm-table tr:hover td {{background:#fbfdff}}
-.mm-status {{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border-radius:999px;font-size:7.5px;font-weight:700;white-space:nowrap}}
-.mm-status:before {{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}}
-.mm-detail {{display:inline-block;padding:3px 8px;border:1px solid #d6e5f0;border-radius:4px;color:#0877c4;font-size:7.5px;font-weight:700;background:#f9fcff}}
-[data-testid="stForm"] {{background:#fff;border:1px solid #dfeaf3;border-radius:8px;padding:17px}}
-[data-testid="stMetric"] {{background:#fff;border:1px solid #dfeaf3;border-radius:8px;padding:10px}}
-@media(max-width:1100px){{.mm-kpi-grid{{grid-template-columns:repeat(2,1fr)}}.mm-dashboard-grid{{grid-template-columns:1fr}}}}
+:root{{--c-blue:#0b65b5;--c-blue2:#0f7ed0;--c-navy:#143f69;--c-text:#254d73;--c-muted:#718aa3;--c-line:#dce9f3;--c-bg:#f6faff;--side:138px;--top:54px;}}
+*{{box-sizing:border-box}}
+html,body,[class*="css"]{{font-family:"Segoe UI",Arial,sans-serif!important}}
+html,body,.stApp{{background:var(--c-bg)!important;color:var(--c-text)!important}}
+#MainMenu,footer,header[data-testid="stHeader"],[data-testid="stSidebar"],[data-testid="collapsedControl"],[data-testid="stToolbar"],div[data-testid="stDecoration"]{{display:none!important}}
+.block-container{{padding:calc(var(--top) + 12px) 14px 18px calc(var(--side) + 12px)!important;max-width:none!important;width:100%!important}}
+/* exact desktop shell */
+.mm-topbar{{position:fixed;z-index:10000;left:0;top:0;right:0;height:var(--top);background:#fff;border-bottom:1px solid #d9e6f0;display:flex;align-items:center;justify-content:space-between;padding:0 14px 0 17px;box-shadow:0 1px 5px rgba(34,76,109,.06)}}
+.mm-topbar-left{{display:flex;align-items:center;gap:13px;height:100%}}
+.mm-topbar-left img:first-child{{width:98px;height:38px;object-fit:contain;object-position:left center}}
+.mm-topbar-left img:last-child{{width:102px;height:42px;object-fit:contain}}
+.mm-top-sep{{width:1px;height:26px;background:#c9d8e4}}
+.mm-user{{display:flex;align-items:center;gap:8px;color:#617c95;font-size:9px;line-height:1.15}}
+.mm-user b{{font-size:10px!important;color:#173f67!important}}
+.mm-avatar{{width:25px;height:25px;border-radius:50%;background:#14588f;color:#fff;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;box-shadow:inset 0 0 0 2px #e9f3fb}}
+.mm-bell{{position:relative;width:21px;height:21px;display:flex;align-items:center;justify-content:center;color:#34688f;margin-right:2px}}
+.mm-bell svg{{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.9}}
+.mm-bell:after{{content:'1';position:absolute;right:-1px;top:-2px;background:#ef4a43;color:#fff;width:10px;height:10px;border-radius:50%;font-size:6px;line-height:10px;text-align:center;font-weight:700}}
+.mm-sidebar{{position:fixed;z-index:9999;left:0;top:var(--top);bottom:0;width:var(--side);border-right:1px solid #d5e5f1;background:#edf7fd url('{data_uri('sidebar')}') left bottom/100% 100% no-repeat;overflow:hidden}}
+.mm-nav{{padding-top:0}}
+.mm-nav a{{position:relative;display:flex;align-items:center;gap:8px;height:43px;padding:0 14px;color:#315a7c;text-decoration:none;font-size:9px;font-weight:600;border-radius:0;margin:0;border-bottom:1px solid rgba(220,233,243,.5)}}
+.mm-nav a:hover{{background:rgba(255,255,255,.55);color:#0a6ebd}}
+.mm-nav a.active{{background:linear-gradient(90deg,#0b61ad 0%,#0c72c4 100%);color:#fff}}
+.mm-nav .ico{{width:15px;height:15px;display:flex;align-items:center;justify-content:center;flex:0 0 15px}}
+.mm-nav .ico svg{{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}}
+.mm-badge{{margin-left:auto;background:#f4a100;color:#fff;border-radius:999px;min-width:15px;height:15px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800}}
+.mm-side-slogan{{position:absolute;left:14px;bottom:31%;font-size:11px;line-height:1.06;color:#4f84af;font-weight:500;text-transform:uppercase;letter-spacing:.01em}}
+.mm-side-foot{{display:none}}
+/* page header */
+.mm-pagehead{{display:flex;justify-content:space-between;align-items:flex-start;margin:0 0 10px}}
+.mm-title{{font-size:25px;line-height:1;font-weight:800;color:#163f68;letter-spacing:-.035em;margin:0 0 3px}}
+.mm-sub{{font-size:9.5px;color:#6f879d;margin:0}}
+.mm-period{{background:#fff;border:1px solid #d9e6f0;border-radius:6px;padding:7px 9px;min-width:158px;color:#315b7e;font-size:8.5px;box-shadow:0 1px 4px rgba(31,72,103,.03)}}
+/* dashboard */
+.mm-kpi-grid{{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:8px}}
+.mm-kpi-card{{position:relative;background:#fff;border:1px solid #dce8f2;border-radius:7px;padding:10px 10px 9px;min-height:98px;box-shadow:0 2px 7px rgba(41,84,118,.04);overflow:hidden}}
+.mm-kpi-card:before{{content:'';position:absolute;left:0;top:0;width:28%;height:2px;background:var(--accent)}}
+.mm-kpi-flex{{display:flex;align-items:flex-start;gap:9px}}
+.mm-kpi-icon{{width:36px;height:36px;border-radius:8px;background:var(--soft);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:19px;flex:0 0 auto}}
+.mm-kpi-label{{font-size:7.8px;font-weight:800;color:#355776;text-transform:uppercase;margin-top:2px;white-space:nowrap}}
+.mm-kpi-value{{font-size:25px;font-weight:800;color:#113f6c;line-height:1.04;margin:4px 0 3px}}
+.mm-kpi-note{{font-size:7.7px;color:#70879b;line-height:1.25}}
+.mm-kpi-mini{{font-size:7px;color:#45647e;margin-top:4px;word-spacing:2px}}
+.mm-dashboard-grid{{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}}
+.mm-panel{{background:#fff;border:1px solid #dce8f2;border-radius:7px;padding:10px 12px;box-shadow:0 2px 7px rgba(41,84,118,.04);min-height:213px}}
+.mm-panel.small{{min-height:165px}}
+.mm-panel-title{{font-size:12px;font-weight:800;color:#193f61;margin-bottom:1px}}
+.mm-panel-sub{{font-size:7.7px;color:#778ea2;margin-bottom:8px}}
+.mm-donut-wrap{{display:flex;align-items:center;gap:20px;padding:0 5px}}
+.mm-donut{{width:140px;height:140px;border-radius:50%;position:relative;flex:0 0 auto}}
+.mm-donut-hole{{position:absolute;inset:29px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#113f6c}}
+.mm-donut-hole b{{font-size:22px;line-height:1}}
+.mm-donut-hole span{{font-size:7.5px;color:#72899f;margin-top:3px}}
+.mm-legend{{flex:1;font-size:7.8px;color:#294d6e}}
+.mm-legend-row{{display:grid;grid-template-columns:8px 1fr auto;gap:5px;align-items:center;margin:7px 0}}
+.mm-dot{{width:7px;height:7px;border-radius:50%}}
+.mm-bars{{height:145px;display:flex;align-items:flex-end;gap:20px;padding:10px 9px 19px 26px;border-left:1px solid #e6eef4;border-bottom:1px solid #e6eef4;background:repeating-linear-gradient(to top,transparent 0,transparent 27px,#edf3f7 28px)}}
+.mm-bar-col{{flex:1;text-align:center;position:relative;height:100%;display:flex;align-items:flex-end;justify-content:center}}
+.mm-vbar{{width:46px;max-width:72%;border-radius:3px 3px 0 0;background:linear-gradient(#0f79ca,#075fa8);position:relative}}
+.mm-vbar.alt{{background:linear-gradient(#74bff0,#5ba8df)}}
+.mm-vbar b{{position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-size:8.5px;color:#214a6e}}
+.mm-xlabel{{position:absolute;bottom:-16px;font-size:7.5px;color:#566f87;white-space:nowrap}}
+.mm-hbars{{padding:1px 2px}}
+.mm-hrow{{display:grid;grid-template-columns:72px 1fr 24px;gap:6px;align-items:center;margin:6px 0;font-size:7.7px;color:#45657f}}
+.mm-htrack{{height:9px;background:#edf5fb;border-radius:3px;overflow:hidden}}
+.mm-hfill{{height:100%;border-radius:3px;background:linear-gradient(90deg,#0875c4,#4ca9e7)}}
+.mm-insights{{background:linear-gradient(180deg,#f6fbff,#eff8ff);border-radius:6px;padding:3px 8px}}
+.mm-insight{{display:grid;grid-template-columns:19px 1fr;gap:7px;align-items:flex-start;padding:7px 0;border-bottom:1px solid #deecf6;font-size:7.8px;color:#315a7d;line-height:1.35}}
+.mm-insight:last-child{{border-bottom:0}}
+.mm-num{{width:18px;height:18px;border-radius:50%;background:#0b6fbd;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:7.5px}}
+.mm-link{{font-size:7.5px;color:#0678c8;font-weight:700}}
+.mm-activity{{background:#fff;border:1px solid #dce8f2;border-radius:7px;padding:9px 11px;box-shadow:0 2px 7px rgba(41,84,118,.04)}}
+.mm-activity-head{{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}}
+.mm-table{{width:100%;border-collapse:separate;border-spacing:0;font-size:7.2px;color:#365a78}}
+.mm-table th{{background:#f2f7fb;color:#617b92;text-align:left;padding:5px 5px;font-size:6.6px;text-transform:uppercase;border-top:1px solid #e5edf4;border-bottom:1px solid #e5edf4}}
+.mm-table td{{padding:5px;border-bottom:1px solid #edf2f6;background:#fff;vertical-align:middle}}
+.mm-status{{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:999px;font-size:6.6px;font-weight:700;white-space:nowrap}}
+.mm-status:before{{content:'';width:4px;height:4px;border-radius:50%;background:currentColor}}
+.mm-detail{{display:inline-block;padding:2px 7px;border:1px solid #d6e5f0;border-radius:4px;color:#0877c4;font-size:6.6px;font-weight:700;background:#f9fcff}}
+/* Streamlit controls harmonized to mockup */
+[data-testid="stForm"],.stForm{{background:#fff!important;border:1px solid #dce8f2!important;border-radius:8px!important;padding:14px!important;box-shadow:0 2px 7px rgba(41,84,118,.04)!important}}
+[data-testid="stMetric"]{{background:#fff!important;border:1px solid #dce8f2!important;border-radius:8px!important;padding:10px!important}}
+.stTextInput input,.stTextArea textarea,[data-baseweb="select"]>div,.stDateInput input{{border-radius:5px!important;border-color:#d8e6f1!important;font-size:10px!important}}
+.stButton>button,.stDownloadButton>button,.stFormSubmitButton>button{{border-radius:5px!important;font-size:10px!important;min-height:34px!important}}
+/* secondary pages */
+.mm-card{{background:#fff;border:1px solid #dce8f2;border-radius:8px;padding:14px;box-shadow:0 2px 7px rgba(41,84,118,.04)}}
+@media(max-width:1050px){{:root{{--side:138px}}.mm-kpi-grid{{grid-template-columns:repeat(2,1fr)}}.mm-dashboard-grid{{grid-template-columns:1fr}}}}
 </style>""", unsafe_allow_html=True)
 
 # ---------- Authentication ----------
@@ -317,22 +325,28 @@ user=st.session_state.user
 role=user.get("role",ROLES[0]); level=ROLE_LEVEL.get(role,0)
 
 # ---------- Navigation ----------
-with st.sidebar:
-    menus=["Dashboard","Form Permintaan Material"]
-    if level==0: menus += ["Riwayat Permohonan"]
-    if level>0: menus += ["Approval Workspace"]
-    menus += ["Dokumen Persetujuan","Profile"]
-    if "page" not in st.session_state or st.session_state.page not in menus: st.session_state.page=menus[0]
-    icons={"Dashboard":"⌂","Form Permintaan Material":"▤","Riwayat Permohonan":"☷","Approval Workspace":"♟","Dokumen Persetujuan":"▧","Profile":"●"}
-    for m in menus:
-        label=f"{icons.get(m,'')}   {m}"
-        if st.button(label,use_container_width=True,type="primary" if st.session_state.page==m else "secondary",key=f"nav_{m}"):
-            st.session_state.page=m; st.rerun()
-    st.markdown("<div style='height:235px'></div>",unsafe_allow_html=True)
-    st.markdown("<div style='font-size:11px;color:#2f6f9f;line-height:1.2;padding:0 9px'><b>SINERGI<br>UNTUK LAUTAN<br>INDONESIA</b></div>",unsafe_allow_html=True)
-    st.markdown("<div style='height:125px'></div>",unsafe_allow_html=True)
-    st.markdown("<div style='font-size:8px;color:#2b668f;line-height:1.25;padding:0 9px'>Integrated Maritime Solutions<br>for a Sustainable Indonesia</div>",unsafe_allow_html=True)
-
+menus=["Dashboard","Form Permintaan Material"]
+if level==0: menus += ["Riwayat Permohonan"]
+if level>0: menus += ["Approval Workspace"]
+menus += ["Dokumen Persetujuan","Profile"]
+qpage = st.query_params.get("page") if hasattr(st, "query_params") else None
+if isinstance(qpage, list): qpage=qpage[0] if qpage else None
+if qpage in menus: st.session_state.page=qpage
+if "page" not in st.session_state or st.session_state.page not in menus: st.session_state.page=menus[0]
+page=st.session_state.page
+icons={
+"Dashboard":"<svg viewBox='0 0 24 24'><path d='M3 11.5 12 4l9 7.5'/><path d='M5.5 10.5V20h13v-9.5'/><path d='M9.5 20v-6h5v6'/></svg>",
+"Form Permintaan Material":"<svg viewBox='0 0 24 24'><path d='M6 3h9l3 3v15H6z'/><path d='M15 3v4h4'/><path d='M9 11h6M9 15h6'/></svg>",
+"Approval Workspace":"<svg viewBox='0 0 24 24'><circle cx='8' cy='8' r='2.5'/><circle cx='16' cy='8' r='2.5'/><path d='M3.5 19v-3c0-2 1.8-3.5 4.5-3.5S12.5 14 12.5 16v3'/><path d='M13 13.5c.8-.6 1.8-1 3-1 2.7 0 4.5 1.5 4.5 3.5v3'/></svg>",
+"Riwayat Permohonan":"<svg viewBox='0 0 24 24'><path d='M8 6h12M8 12h12M8 18h12'/><circle cx='4' cy='6' r='1'/><circle cx='4' cy='12' r='1'/><circle cx='4' cy='18' r='1'/></svg>",
+"Dokumen Persetujuan":"<svg viewBox='0 0 24 24'><path d='M6 3h9l3 3v15H6z'/><path d='M15 3v4h4'/><path d='m9 15 2 2 4-5'/></svg>",
+"Profile":"<svg viewBox='0 0 24 24'><circle cx='12' cy='8' r='3'/><path d='M5 21c.5-5 3-7.5 7-7.5s6.5 2.5 7 7.5'/></svg>"
+}
+nav_html=[]
+for m in menus:
+    active=" active" if page==m else ""
+    badge="<span class='mm-badge'>2</span>" if m=="Approval Workspace" else ""
+    nav_html.append(f"<a class='{active.strip()}' href='?page={m.replace(' ','%20')}' target='_self'><span class='ico'>{icons.get(m,'')}</span><span>{html.escape(m)}</span>{badge}</a>")
 initials=''.join([x[:1] for x in str(user.get('name','U')).split()[:2]]).upper() or 'U'
 st.markdown(f"""
 <div class='mm-topbar'>
@@ -342,11 +356,15 @@ st.markdown(f"""
     <img src='{data_uri('bima')}'/>
   </div>
   <div class='mm-user'>
-    <span class='mm-bell'>♟</span>
+    <span class='mm-bell'><svg viewBox='0 0 24 24'><path d='M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9'/><path d='M10 21h4'/></svg></span>
     <div class='mm-avatar'>{initials}</div>
-    <div><b style='color:#214b70;font-size:11px'>{user.get('name','User')}</b><br><span>{role}</span></div>
+    <div><b style='color:#214b70;font-size:10.5px'>{html.escape(str(user.get('name','User')))}</b><br><span>{html.escape(str(role))}</span></div>
     <span style='font-size:14px;color:#315d82;margin-left:6px'>⌄</span>
   </div>
+</div>
+<div class='mm-sidebar'>
+  <div class='mm-nav'>{''.join(nav_html)}</div>
+  <div class='mm-side-slogan'>SINERGI<br>UNTUK LAUTAN<br>INDONESIA</div>
 </div>
 """,unsafe_allow_html=True)
 
@@ -393,7 +411,6 @@ def role_filtered(df):
     return d
 
 # ---------- Pages ----------
-page=st.session_state.page
 all_req=requests_df(); d=role_filtered(all_req)
 
 if page=="Dashboard":
