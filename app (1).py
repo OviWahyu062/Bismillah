@@ -173,19 +173,39 @@ def requests_df():
 # ---------- Styling ----------
 st.markdown(f"""
 <style>
-#MainMenu, footer {{visibility:hidden}} header {{background:transparent}}
-.stApp {{background:#f4f8fc; color:#18324b}}
-[data-testid="stSidebar"] {{background:linear-gradient(rgba(244,249,253,.92),rgba(244,249,253,.92)), url('{data_uri('sidebar')}') center bottom/cover no-repeat; border-right:1px solid #dbe7f1}}
-[data-testid="stSidebar"] .block-container {{padding-top:1.1rem}}
-.block-container {{padding-top:1.5rem; padding-bottom:2rem; max-width:1450px}}
-h1,h2,h3 {{color:#143f6b; letter-spacing:-.02em}}
-.mm-card {{background:white;border:1px solid #e0eaf3;border-radius:14px;padding:18px;box-shadow:0 5px 18px rgba(33,78,115,.06);height:100%}}
-.mm-kpi {{font-size:28px;font-weight:800;color:#123f6b;margin-top:4px}} .mm-muted{{color:#71879a;font-size:13px}}
-.mm-pill {{display:inline-block;padding:5px 10px;border-radius:999px;background:#eaf4ff;color:#1774b8;font-size:12px;font-weight:700}}
-.mm-title {{font-size:28px;font-weight:800;color:#143f6b;margin-bottom:0}} .mm-sub{{color:#72869a;margin-bottom:18px}}
-.logo-row img {{object-fit:contain}}
-div[data-testid="stButton"] button {{border-radius:9px;font-weight:700}}
-[data-testid="stForm"] {{background:#fff;border:1px solid #e0eaf3;border-radius:14px;padding:20px}}
+#MainMenu, footer {{visibility:hidden}}
+header[data-testid="stHeader"] {{background:#ffffff;border-bottom:1px solid #e9eff5;height:0px;}}
+.stApp {{background:#f7fbff;color:#20364b}}
+.block-container {{padding-top:.65rem;padding-bottom:2rem;max-width:1500px}}
+[data-testid="stSidebar"] {{width:252px!important;min-width:252px!important;background:linear-gradient(rgba(245,250,254,.92),rgba(245,250,254,.94)),url('{data_uri('sidebar')}') left bottom/100% auto no-repeat;border-right:1px solid #dce8f2;box-shadow:2px 0 12px rgba(50,90,120,.03)}}
+[data-testid="stSidebar"] .block-container {{padding:1.0rem .9rem 1.3rem}}
+[data-testid="stSidebar"] img {{max-height:48px;object-fit:contain;margin:0 auto 5px auto;display:block}}
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {{font-size:11px;color:#67809a;letter-spacing:.04em}}
+div[data-testid="stButton"] button {{height:42px;border-radius:6px;font-weight:600;border:1px solid transparent;box-shadow:none;transition:.15s}}
+div[data-testid="stButton"] button[kind="primary"] {{background:#0878be!important;color:#fff!important;border-color:#0878be!important}}
+div[data-testid="stButton"] button[kind="secondary"] {{background:transparent!important;color:#536b82!important;border-color:transparent!important;text-align:left;justify-content:flex-start;padding-left:14px}}
+div[data-testid="stButton"] button[kind="secondary"]:hover {{background:#eaf5fc!important;color:#0878be!important;border-color:#d9ecf8!important}}
+h1,h2,h3 {{color:#183e63;letter-spacing:-.02em}}
+.mm-topbar {{display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:1px solid #e7eef5;margin:-10px -1rem 18px -1rem;padding:9px 18px 10px;min-height:58px}}
+.mm-topbar-left {{display:flex;align-items:center;gap:18px}}
+.mm-topbar img {{height:30px;object-fit:contain}}
+.mm-user {{display:flex;align-items:center;gap:10px;font-size:12px;color:#607991}}
+.mm-avatar {{width:34px;height:34px;border-radius:50%;background:#0d78bb;color:white;display:flex;align-items:center;justify-content:center;font-weight:700}}
+.mm-title {{font-size:26px;font-weight:800;color:#173e63;margin:0 0 2px}}
+.mm-sub {{color:#71879a;margin-bottom:14px;font-size:13px}}
+.mm-card {{background:#fff;border:1px solid #e1ebf3;border-radius:8px;padding:15px 16px;box-shadow:0 2px 8px rgba(34,75,110,.04);height:100%}}
+.mm-kpi-card {{background:#fff;border:1px solid #e1ebf3;border-top:3px solid #1984c5;border-radius:7px;padding:14px 16px;min-height:98px}}
+.mm-kpi-label {{font-size:10px;font-weight:700;color:#6b8194;letter-spacing:.02em}}
+.mm-kpi {{font-size:25px;font-weight:800;color:#174a76;margin:5px 0 2px}}
+.mm-muted {{color:#7b8fa2;font-size:11px}}
+.mm-pill {{display:inline-block;padding:4px 9px;border-radius:999px;background:#e9f5fc;color:#0c75b7;font-size:11px;font-weight:700}}
+.mm-section {{background:#fff;border:1px solid #e2ebf3;border-radius:7px;padding:14px 16px;margin-top:10px}}
+.mm-section-title {{font-size:14px;font-weight:800;color:#223f5c;margin-bottom:8px}}
+.mm-row {{display:grid;grid-template-columns:1.05fr .8fr 1fr 1.35fr 1.4fr 1.35fr .85fr .45fr;align-items:center;gap:8px;padding:10px 12px;margin:5px 0;border:1px solid #e8eff5;border-radius:7px;background:#fbfdff;font-size:11px;box-shadow:0 1px 4px rgba(45,80,110,.03)}}
+.mm-row-head {{background:#f2f7fb;color:#72879a;font-size:9px;font-weight:800;text-transform:uppercase;box-shadow:none}}
+.mm-insight {{background:#fffdf4;border:1px solid #f1e7bd;border-radius:7px;padding:12px 14px;min-height:130px}}
+[data-testid="stForm"] {{background:#fff;border:1px solid #e0eaf3;border-radius:8px;padding:18px}}
+[data-testid="stMetric"] {{background:#fff;border:1px solid #e1ebf3;border-radius:7px;padding:12px}}
 </style>""", unsafe_allow_html=True)
 
 # ---------- Authentication ----------
@@ -252,27 +272,41 @@ role=user.get("role",ROLES[0]); level=ROLE_LEVEL.get(role,0)
 
 # ---------- Navigation ----------
 with st.sidebar:
-    st.image(asset_image('bima'),width=170)
-    st.caption("SISTEM MASTER MATERIAL")
+    st.image(asset_image('bima'),width=150)
+    st.markdown("<div style='text-align:center;font-size:10px;color:#74899b;margin-bottom:12px'>SISTEM MASTER MATERIAL</div>",unsafe_allow_html=True)
     menus=["Dashboard","Form Permintaan Material"]
     if level==0: menus += ["Riwayat Permohonan"]
     if level>0: menus += ["Approval Material"]
     menus += ["Dokumen Persetujuan","Profile"]
     if "page" not in st.session_state or st.session_state.page not in menus: st.session_state.page=menus[0]
+    icons={"Dashboard":"⌂","Form Permintaan Material":"▣","Riwayat Permohonan":"☷","Approval Material":"✓","Dokumen Persetujuan":"▤","Profile":"●"}
     for m in menus:
-        if st.button(m,use_container_width=True,type="primary" if st.session_state.page==m else "secondary"):
+        label=f"{icons.get(m,'')}  {m}"
+        if st.button(label,use_container_width=True,type="primary" if st.session_state.page==m else "secondary",key=f"nav_{m}"):
             st.session_state.page=m; st.rerun()
-    st.markdown("<div style='height:150px'></div>",unsafe_allow_html=True)
-    st.caption("SINERGI UNTUK LAUTAN INDONESIA")
-    if st.button("Keluar",use_container_width=True):
+    st.markdown("<div style='height:160px'></div>",unsafe_allow_html=True)
+    st.markdown("<div style='font-size:11px;color:#6b879d;line-height:1.35'><b>SINERGI<br>UNTUK LAUTAN<br>INDONESIA</b><br><span style='font-size:9px'>Integrated Maritime Solutions<br>for a Sustainable Indonesia</span></div>",unsafe_allow_html=True)
+    st.markdown("<div style='height:8px'></div>",unsafe_allow_html=True)
+    if st.button("Keluar",use_container_width=True,key="logout"):
         st.session_state.clear(); st.rerun()
 
-# Header
-h1,h2=st.columns([4,1])
-with h1:
-    st.markdown(f"<span class='mm-pill'>{role}</span>",unsafe_allow_html=True)
-with h2:
-    st.markdown(f"<div style='text-align:right'><b>{user.get('name','User')}</b><br><span class='mm-muted'>{user.get('area','-')}</span></div>",unsafe_allow_html=True)
+# Header bar mirroring the reference mockup
+initials=''.join([x[:1] for x in str(user.get('name','U')).split()[:2]]).upper() or 'U'
+st.markdown(f"""
+<div class='mm-topbar'>
+  <div class='mm-topbar-left'>
+    <img src='{data_uri('danantara')}' />
+    <span style='height:28px;width:1px;background:#dce7ef'></span>
+    <img src='{data_uri('bima')}' />
+  </div>
+  <div class='mm-user'>
+    <span style='font-size:16px'>●</span>
+    <div class='mm-avatar'>{initials}</div>
+    <div><b style='color:#314c64'>{user.get('name','User')}</b><br><span>{role}</span></div>
+    <span style='font-size:12px'>⌄</span>
+  </div>
+</div>
+""",unsafe_allow_html=True)
 
 # ---------- Helpers ----------
 def canonical(df):
@@ -294,22 +328,17 @@ def status_badge(s):
 
 def activity_table(df,limit=8):
     d=canonical(df).head(limit).copy()
-    if d.empty: st.info("Belum ada data."); return
-    cols=st.columns([1.1,1,1.2,1.4,1.6,1.5,1,.55])
-    heads=["ID REQ","TANGGAL","PEMOHON","SITE","NAMA BARANG","MATERIAL GROUP","STATUS","AKSI"]
-    for c,h in zip(cols,heads): c.markdown(f"<b style='font-size:11px;color:#6e8498'>{h}</b>",unsafe_allow_html=True)
+    if d.empty:
+        st.info("Belum ada data."); return
+    st.markdown("<div class='mm-row mm-row-head'><div>ID REQ</div><div>TANGGAL</div><div>PEMOHON</div><div>SITE</div><div>NAMA BARANG</div><div>MATERIAL GROUP</div><div>STATUS</div><div>AKSI</div></div>",unsafe_allow_html=True)
     for i,r in d.iterrows():
-        cols=st.columns([1.1,1,1.2,1.4,1.6,1.5,1,.55])
-        vals=[r['ID Request'],r['Tanggal'],r['Pemohon'],r['Site'],r['Nama Barang'],r['Material Group']]
-        for c,v in zip(cols[:6],vals): c.markdown(f"<span style='font-size:12px'>{v}</span>",unsafe_allow_html=True)
-        cols[6].markdown(status_badge(r['Status']),unsafe_allow_html=True)
-        if cols[7].button("Detail",key=f"detail_{i}_{r['ID Request']}"): st.session_state.detail_id=r['ID Request']
-    if st.session_state.get("detail_id"):
-        rid=st.session_state.detail_id; row=d[d['ID Request']==rid]
-        if not row.empty:
-            with st.expander(f"Detail {rid}",expanded=True): st.json(row.iloc[0].to_dict())
+        st.markdown(f"""<div class='mm-row'>
+        <div><b style='color:#126aa4'>{r['ID Request']}</b></div><div>{r['Tanggal']}</div><div>{r['Pemohon']}</div><div>{r['Site']}</div>
+        <div><b>{r['Nama Barang']}</b></div><div>{r['Material Group']}</div><div>{status_badge(r['Status'])}</div><div><span style='color:#1678b7;font-weight:700'>Detail</span></div>
+        </div>""",unsafe_allow_html=True)
 
-def page_title(title,sub): st.markdown(f"<div class='mm-title'>{title}</div><div class='mm-sub'>{sub}</div>",unsafe_allow_html=True)
+
+def page_title(title,sub): st.markdown(f"<div style='font-size:10px;color:#8aa0b2;margin-bottom:5px'>Dashboard &nbsp;›&nbsp; {title}</div><div class='mm-title'>{title}</div><div class='mm-sub'>{sub}</div>",unsafe_allow_html=True)
 
 def role_filtered(df):
     d=canonical(df)
@@ -328,20 +357,43 @@ all_req=requests_df(); d=role_filtered(all_req)
 if page=="Dashboard":
     page_title("Dashboard","Ringkasan aktivitas permintaan master material SAP")
     total=len(d); pending=int(d['Status'].str.contains('Pending',case=False,na=False).sum()) if not d.empty else 0; approved=int(d['Status'].str.contains('Approved Final',case=False,na=False).sum()) if not d.empty else 0
-    c1,c2,c3,c4=st.columns(4)
-    for c,label,val,note in [(c1,"TOTAL PERMINTAAN",total,"Request material"),(c2,"PENDING APPROVAL",pending,"Menunggu persetujuan"),(c3,"APPROVED FINAL",approved,"Telah disetujui"),(c4,"RATA-RATA PROSES","2,4 Hari","SLA target ≤ 3 hari")]:
-        c.markdown(f"<div class='mm-card'><div class='mm-muted'>{label}</div><div class='mm-kpi'>{val}</div><div class='mm-muted'>{note}</div></div>",unsafe_allow_html=True)
-    st.write("")
+    # KPI cards with the same compact visual hierarchy as the Word reference
+    k1,k2,k3,k4=st.columns(4)
+    cards=[("▣","TOTAL PERMINTAAN",total,"Request material","#1786c6"),("⌛","PENDING APPROVAL",pending,"L1 • L2 • L3 • L4","#e4a31a"),("✓","APPROVED FINAL",approved,"Telah disetujui sampai Approval L4","#24a36a"),("◷","RATA-RATA PROSES","2,4 Hari","SLA target ≤ 3 hari","#4aa1cf")]
+    for c,(ico,label,val,note,col) in zip([k1,k2,k3,k4],cards):
+        c.markdown(f"<div class='mm-kpi-card' style='border-top-color:{col}'><div style='display:flex;gap:9px;align-items:center'><span style='font-size:19px;color:{col}'>{ico}</span><div><div class='mm-kpi-label'>{label}</div><div class='mm-kpi'>{val}</div><div class='mm-muted'>{note}</div></div></div></div>",unsafe_allow_html=True)
+    st.markdown("<div style='height:10px'></div>",unsafe_allow_html=True)
     a,b=st.columns([1,1])
     with a:
-        st.markdown("<div class='mm-card'><b>Status Workflow Approval</b>",unsafe_allow_html=True)
-        counts=d['Status'].value_counts() if not d.empty else pd.Series(dtype=int); st.bar_chart(counts)
-        st.markdown("</div>",unsafe_allow_html=True)
+        st.markdown("<div class='mm-section-title'>Status Workflow Approval</div><div class='mm-muted'>Distribusi status permintaan master material</div>",unsafe_allow_html=True)
+        counts=d['Status'].value_counts() if not d.empty else pd.Series(dtype=int)
+        if not counts.empty:
+            import matplotlib.pyplot as plt
+            fig,ax=plt.subplots(figsize=(4.8,2.8)); ax.pie(counts.values,labels=None,startangle=90,wedgeprops=dict(width=.38,edgecolor='white')); ax.text(0,0.06,str(int(counts.sum())),ha='center',va='center',fontsize=17,fontweight='bold'); ax.text(0,-.14,'Total Req',ha='center',va='center',fontsize=8,color='#71879a'); ax.legend(counts.index,loc='center left',bbox_to_anchor=(1,.5),frameon=False,fontsize=7); ax.set_aspect('equal'); fig.patch.set_alpha(0); st.pyplot(fig,use_container_width=True)
     with b:
-        st.markdown("<div class='mm-card'><b>Permintaan per Area</b>",unsafe_allow_html=True)
-        counts=d['Area'].replace('', 'Tidak tercatat').value_counts() if not d.empty else pd.Series(dtype=int); st.bar_chart(counts)
-        st.markdown("</div>",unsafe_allow_html=True)
-    st.subheader("Aktivitas Terkini"); activity_table(ws_df(ACTIVITY_SHEET) if not ws_df(ACTIVITY_SHEET).empty else all_req,8)
+        st.markdown("<div class='mm-section-title'>Permintaan per Area</div><div class='mm-muted'>Jumlah permintaan material berdasarkan area</div>",unsafe_allow_html=True)
+        ac=d['Area'].replace('', 'Tidak tercatat').value_counts() if not d.empty else pd.Series(dtype=int)
+        if not ac.empty:
+            import matplotlib.pyplot as plt
+            fig,ax=plt.subplots(figsize=(4.8,2.8)); bars=ax.bar(ac.index,ac.values); ax.spines[['top','right','left']].set_visible(False); ax.grid(axis='y',alpha=.15); ax.tick_params(axis='x',labelsize=8); ax.tick_params(axis='y',labelsize=8);
+            for bar,val in zip(bars,ac.values): ax.text(bar.get_x()+bar.get_width()/2,val+.08,str(int(val)),ha='center',fontsize=8)
+            fig.patch.set_alpha(0); st.pyplot(fig,use_container_width=True)
+    c,dcol=st.columns([1,1])
+    with c:
+        st.markdown("<div class='mm-section-title'>Distribusi Material Group</div><div class='mm-muted'>Jumlah permintaan berdasarkan kategori material</div>",unsafe_allow_html=True)
+        mg=d['Material Group'].replace('', 'Lainnya').value_counts().head(6) if not d.empty else pd.Series(dtype=int)
+        if not mg.empty:
+            import matplotlib.pyplot as plt
+            fig,ax=plt.subplots(figsize=(4.8,2.6)); ax.barh(mg.index[::-1],mg.values[::-1]); ax.spines[['top','right','bottom']].set_visible(False); ax.tick_params(axis='y',labelsize=7); ax.tick_params(axis='x',labelsize=7); ax.grid(axis='x',alpha=.13); fig.patch.set_alpha(0); st.pyplot(fig,use_container_width=True)
+    with dcol:
+        st.markdown("<div class='mm-section-title'>Insight Operasional</div>",unsafe_allow_html=True)
+        st.markdown(f"""<div class='mm-insight'>
+        <div style='margin-bottom:10px'><b style='color:#1a78b4'>●</b> Permintaan tertinggi berdasarkan data saat ini berasal dari <b>{(d['Area'].value_counts().index[0] if not d.empty and not d['Area'].value_counts().empty else '-')}</b>.</div>
+        <div style='margin-bottom:10px'><b style='color:#1a78b4'>●</b> Sebanyak <b>{pending}</b> permintaan masih menunggu proses approval.</div>
+        <div><b style='color:#1a78b4'>●</b> Dashboard menampilkan data sesuai hak akses role pengguna.</div>
+        </div>""",unsafe_allow_html=True)
+    st.markdown("<div style='display:flex;justify-content:space-between;align-items:center;margin-top:8px'><div><b style='font-size:14px;color:#203e58'>Aktivitas Terkini</b><div class='mm-muted'>Daftar permintaan material terbaru yang sedang atau telah diproses</div></div><div style='font-size:11px;color:#1878b5;font-weight:700'>Lihat Semua Permintaan →</div></div>",unsafe_allow_html=True)
+    act=ws_df(ACTIVITY_SHEET); activity_table(act if not act.empty else all_req,8)
 
 elif page=="Form Permintaan Material":
     page_title("Form Permintaan Master Material Baru","Lengkapi data dan material baru untuk diproses")
