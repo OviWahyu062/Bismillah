@@ -6,7 +6,7 @@ Google Sheets: configure st.secrets["gcp_service_account"] and SHEET_ID below.
 """
 import streamlit as st
 import pandas as pd
-import io, os, base64, hashlib, hmac, textwrap, re
+import io, os, base64, hashlib, hmac, textwrap, re, html
 from datetime import datetime, date
 from PIL import Image, ImageDraw, ImageFont
 
@@ -173,39 +173,85 @@ def requests_df():
 # ---------- Styling ----------
 st.markdown(f"""
 <style>
-#MainMenu, footer {{visibility:hidden}}
-header[data-testid="stHeader"] {{background:#ffffff;border-bottom:1px solid #e9eff5;height:0px;}}
-.stApp {{background:#f7fbff;color:#20364b}}
-.block-container {{padding-top:.65rem;padding-bottom:2rem;max-width:1500px}}
-[data-testid="stSidebar"] {{width:252px!important;min-width:252px!important;background:linear-gradient(rgba(245,250,254,.92),rgba(245,250,254,.94)),url('{data_uri('sidebar')}') left bottom/100% auto no-repeat;border-right:1px solid #dce8f2;box-shadow:2px 0 12px rgba(50,90,120,.03)}}
-[data-testid="stSidebar"] .block-container {{padding:1.0rem .9rem 1.3rem}}
-[data-testid="stSidebar"] img {{max-height:48px;object-fit:contain;margin:0 auto 5px auto;display:block}}
-[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {{font-size:11px;color:#67809a;letter-spacing:.04em}}
-div[data-testid="stButton"] button {{height:42px;border-radius:6px;font-weight:600;border:1px solid transparent;box-shadow:none;transition:.15s}}
-div[data-testid="stButton"] button[kind="primary"] {{background:#0878be!important;color:#fff!important;border-color:#0878be!important}}
-div[data-testid="stButton"] button[kind="secondary"] {{background:transparent!important;color:#536b82!important;border-color:transparent!important;text-align:left;justify-content:flex-start;padding-left:14px}}
-div[data-testid="stButton"] button[kind="secondary"]:hover {{background:#eaf5fc!important;color:#0878be!important;border-color:#d9ecf8!important}}
-h1,h2,h3 {{color:#183e63;letter-spacing:-.02em}}
-.mm-topbar {{display:flex;align-items:center;justify-content:space-between;background:#fff;border-bottom:1px solid #e7eef5;margin:-10px -1rem 18px -1rem;padding:9px 18px 10px;min-height:58px}}
-.mm-topbar-left {{display:flex;align-items:center;gap:18px}}
-.mm-topbar img {{height:30px;object-fit:contain}}
-.mm-user {{display:flex;align-items:center;gap:10px;font-size:12px;color:#607991}}
-.mm-avatar {{width:34px;height:34px;border-radius:50%;background:#0d78bb;color:white;display:flex;align-items:center;justify-content:center;font-weight:700}}
-.mm-title {{font-size:26px;font-weight:800;color:#173e63;margin:0 0 2px}}
-.mm-sub {{color:#71879a;margin-bottom:14px;font-size:13px}}
-.mm-card {{background:#fff;border:1px solid #e1ebf3;border-radius:8px;padding:15px 16px;box-shadow:0 2px 8px rgba(34,75,110,.04);height:100%}}
-.mm-kpi-card {{background:#fff;border:1px solid #e1ebf3;border-top:3px solid #1984c5;border-radius:7px;padding:14px 16px;min-height:98px}}
-.mm-kpi-label {{font-size:10px;font-weight:700;color:#6b8194;letter-spacing:.02em}}
-.mm-kpi {{font-size:25px;font-weight:800;color:#174a76;margin:5px 0 2px}}
-.mm-muted {{color:#7b8fa2;font-size:11px}}
-.mm-pill {{display:inline-block;padding:4px 9px;border-radius:999px;background:#e9f5fc;color:#0c75b7;font-size:11px;font-weight:700}}
-.mm-section {{background:#fff;border:1px solid #e2ebf3;border-radius:7px;padding:14px 16px;margin-top:10px}}
-.mm-section-title {{font-size:14px;font-weight:800;color:#223f5c;margin-bottom:8px}}
-.mm-row {{display:grid;grid-template-columns:1.05fr .8fr 1fr 1.35fr 1.4fr 1.35fr .85fr .45fr;align-items:center;gap:8px;padding:10px 12px;margin:5px 0;border:1px solid #e8eff5;border-radius:7px;background:#fbfdff;font-size:11px;box-shadow:0 1px 4px rgba(45,80,110,.03)}}
-.mm-row-head {{background:#f2f7fb;color:#72879a;font-size:9px;font-weight:800;text-transform:uppercase;box-shadow:none}}
-.mm-insight {{background:#fffdf4;border:1px solid #f1e7bd;border-radius:7px;padding:12px 14px;min-height:130px}}
-[data-testid="stForm"] {{background:#fff;border:1px solid #e0eaf3;border-radius:8px;padding:18px}}
-[data-testid="stMetric"] {{background:#fff;border:1px solid #e1ebf3;border-radius:7px;padding:12px}}
+:root{{--mm-blue:#066fbe;--mm-blue2:#1395df;--mm-navy:#0d3f72;--mm-text:#193c5e;--mm-line:#dce9f4;--mm-bg:#f5faff;}}
+#MainMenu, footer, header[data-testid="stHeader"] {{visibility:hidden;height:0}}
+html,body,[class*="css"] {{font-family:Inter,Segoe UI,Arial,sans-serif}}
+.stApp {{background:linear-gradient(135deg,#f8fcff 0%,#f0f7fd 100%);color:var(--mm-text)}}
+.block-container {{padding:76px 18px 24px 18px;max-width:1550px}}
+/* left navigation, deliberately narrow like the supplied mockup */
+[data-testid="stSidebar"] {{width:208px!important;min-width:208px!important;background:#eef7fd url('{data_uri('sidebar')}') left bottom/100% auto no-repeat;border-right:1px solid #d8e8f4;box-shadow:none}}
+[data-testid="stSidebar"] .block-container {{padding:75px 10px 18px 10px}}
+[data-testid="stSidebar"] [data-testid="stImage"] {{display:none}}
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"] {{display:none}}
+[data-testid="stSidebar"] div[data-testid="stButton"] {{margin:0 0 4px 0}}
+[data-testid="stSidebar"] div[data-testid="stButton"] button {{height:44px;border-radius:4px;font-size:12px;font-weight:600;border:0;box-shadow:none;justify-content:flex-start;padding:0 12px}}
+[data-testid="stSidebar"] div[data-testid="stButton"] button[kind="primary"] {{background:linear-gradient(90deg,#0569b4,#087fcf)!important;color:white!important}}
+[data-testid="stSidebar"] div[data-testid="stButton"] button[kind="secondary"] {{background:transparent!important;color:#315c82!important}}
+[data-testid="stSidebar"] div[data-testid="stButton"] button[kind="secondary"]:hover {{background:rgba(255,255,255,.7)!important;color:#046db9!important}}
+/* fixed corporate top bar */
+.mm-topbar {{position:fixed;z-index:999;left:0;top:0;right:0;height:64px;background:rgba(255,255,255,.97);border-bottom:1px solid #d9e8f3;display:flex;align-items:center;justify-content:space-between;padding:0 22px 0 18px;box-shadow:0 2px 8px rgba(28,75,115,.05)}}
+.mm-topbar-left {{display:flex;align-items:center;gap:16px}}
+.mm-topbar-left img:first-child {{height:31px;width:auto}}
+.mm-topbar-left img:last-child {{height:33px;width:auto}}
+.mm-top-sep {{width:1px;height:31px;background:#c7d8e6}}
+.mm-user {{display:flex;align-items:center;gap:9px;color:#56718a;font-size:11px;line-height:1.25}}
+.mm-avatar {{width:32px;height:32px;border-radius:50%;background:#0d568e;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}}
+.mm-bell {{position:relative;font-size:18px;color:#245a84;margin-right:8px}}
+.mm-bell:after {{content:'1';position:absolute;right:-5px;top:-5px;background:#f44336;color:#fff;width:14px;height:14px;border-radius:50%;font-size:8px;display:flex;align-items:center;justify-content:center;font-weight:700}}
+.mm-pagehead {{display:flex;justify-content:space-between;align-items:flex-start;margin:0 0 12px}}
+.mm-title {{font-size:31px;line-height:1;font-weight:800;color:#123f6b;letter-spacing:-.03em;margin:0 0 3px}}
+.mm-sub {{font-size:12px;color:#6d879f;margin:0}}
+.mm-period {{background:#fff;border:1px solid #d9e7f2;border-radius:7px;padding:7px 10px;min-width:170px;color:#315a7e;font-size:11px;box-shadow:0 1px 4px rgba(30,75,110,.03)}}
+.mm-card {{background:#fff;border:1px solid #dfeaf3;border-radius:9px;box-shadow:0 2px 8px rgba(42,86,122,.04)}}
+.mm-kpi-grid {{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:10px}}
+.mm-kpi-card {{position:relative;background:#fff;border:1px solid #dfeaf3;border-radius:8px;padding:12px 14px;min-height:100px;box-shadow:0 2px 8px rgba(42,86,122,.04);overflow:hidden}}
+.mm-kpi-card:before {{content:'';position:absolute;left:0;top:0;width:100%;height:3px;background:var(--accent)}}
+.mm-kpi-flex {{display:flex;align-items:flex-start;gap:11px}}
+.mm-kpi-icon {{width:38px;height:38px;border-radius:8px;background:var(--soft);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:20px;flex:0 0 auto}}
+.mm-kpi-label {{font-size:9px;font-weight:800;color:#49647e;text-transform:uppercase;margin-top:1px}}
+.mm-kpi-value {{font-size:28px;font-weight:800;color:#123f6b;line-height:1.05;margin:4px 0 3px}}
+.mm-kpi-note {{font-size:9px;color:#71889b;line-height:1.25}}
+.mm-kpi-mini {{font-size:9px;color:#49647e;margin-top:4px;word-spacing:5px}}
+.mm-dashboard-grid {{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}}
+.mm-panel {{background:#fff;border:1px solid #dfeaf3;border-radius:8px;padding:12px 14px;box-shadow:0 2px 8px rgba(42,86,122,.04);min-height:230px}}
+.mm-panel.small {{min-height:185px}}
+.mm-panel-title {{font-size:14px;font-weight:800;color:#193f61;margin-bottom:1px}}
+.mm-panel-sub {{font-size:9px;color:#7890a3;margin-bottom:11px}}
+.mm-donut-wrap {{display:flex;align-items:center;gap:20px;padding:2px 8px 0}}
+.mm-donut {{width:145px;height:145px;border-radius:50%;position:relative;flex:0 0 auto}}
+.mm-donut-hole {{position:absolute;inset:31px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#123f6b}}
+.mm-donut-hole b {{font-size:25px;line-height:1}}
+.mm-donut-hole span {{font-size:9px;color:#738aa0;margin-top:4px}}
+.mm-legend {{flex:1;font-size:9px;color:#284c6e}}
+.mm-legend-row {{display:grid;grid-template-columns:10px 1fr auto;gap:6px;align-items:center;margin:8px 0}}
+.mm-dot {{width:8px;height:8px;border-radius:50%}}
+.mm-bars {{height:154px;display:flex;align-items:flex-end;gap:23px;padding:12px 10px 22px 28px;border-left:1px solid #e7eef4;border-bottom:1px solid #e7eef4;background:repeating-linear-gradient(to top,transparent 0,transparent 29px,#edf3f7 30px)}}
+.mm-bar-col {{flex:1;text-align:center;position:relative;height:100%;display:flex;align-items:flex-end;justify-content:center}}
+.mm-vbar {{width:54px;max-width:70%;border-radius:4px 4px 0 0;background:linear-gradient(#2b9ce9,#0873c5);position:relative}}
+.mm-vbar.alt {{background:linear-gradient(#76c1f2,#59a8e1)}}
+.mm-vbar b {{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:10px;color:#244d70}}
+.mm-xlabel {{position:absolute;bottom:-18px;font-size:9px;color:#546f87;white-space:nowrap}}
+.mm-hbars {{padding:4px 3px}}
+.mm-hrow {{display:grid;grid-template-columns:85px 1fr 30px;gap:7px;align-items:center;margin:8px 0;font-size:9px;color:#476681}}
+.mm-htrack {{height:10px;background:#edf5fb;border-radius:3px;overflow:hidden}}
+.mm-hfill {{height:100%;border-radius:3px;background:linear-gradient(90deg,#0876c6,#4aa9e9)}}
+.mm-insights {{background:linear-gradient(180deg,#f5fbff,#eef8ff);border-radius:6px;padding:5px 8px}}
+.mm-insight {{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #dfeef8;font-size:9px;color:#315a7d;line-height:1.35}}
+.mm-insight:last-child {{border-bottom:0}}
+.mm-num {{width:20px;height:20px;border-radius:50%;background:#0b70bd;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:9px}}
+.mm-activity {{background:#fff;border:1px solid #dfeaf3;border-radius:8px;padding:12px 14px;box-shadow:0 2px 8px rgba(42,86,122,.04)}}
+.mm-activity-head {{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px}}
+.mm-link {{font-size:9px;color:#0678c8;font-weight:700}}
+.mm-table {{width:100%;border-collapse:separate;border-spacing:0;font-size:8.5px;color:#365a78}}
+.mm-table th {{background:#f2f7fb;color:#617b92;text-align:left;padding:7px 7px;font-size:7.5px;text-transform:uppercase;border-top:1px solid #e5edf4;border-bottom:1px solid #e5edf4}}
+.mm-table td {{padding:7px;border-bottom:1px solid #edf2f6;background:#fff}}
+.mm-table tr:hover td {{background:#fbfdff}}
+.mm-status {{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border-radius:999px;font-size:7.5px;font-weight:700;white-space:nowrap}}
+.mm-status:before {{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}}
+.mm-detail {{display:inline-block;padding:3px 8px;border:1px solid #d6e5f0;border-radius:4px;color:#0877c4;font-size:7.5px;font-weight:700;background:#f9fcff}}
+[data-testid="stForm"] {{background:#fff;border:1px solid #dfeaf3;border-radius:8px;padding:17px}}
+[data-testid="stMetric"] {{background:#fff;border:1px solid #dfeaf3;border-radius:8px;padding:10px}}
+@media(max-width:1100px){{.mm-kpi-grid{{grid-template-columns:repeat(2,1fr)}}.mm-dashboard-grid{{grid-template-columns:1fr}}}}
 </style>""", unsafe_allow_html=True)
 
 # ---------- Authentication ----------
@@ -272,38 +318,34 @@ role=user.get("role",ROLES[0]); level=ROLE_LEVEL.get(role,0)
 
 # ---------- Navigation ----------
 with st.sidebar:
-    st.image(asset_image('bima'),width=150)
-    st.markdown("<div style='text-align:center;font-size:10px;color:#74899b;margin-bottom:12px'>SISTEM MASTER MATERIAL</div>",unsafe_allow_html=True)
     menus=["Dashboard","Form Permintaan Material"]
     if level==0: menus += ["Riwayat Permohonan"]
-    if level>0: menus += ["Approval Material"]
+    if level>0: menus += ["Approval Workspace"]
     menus += ["Dokumen Persetujuan","Profile"]
     if "page" not in st.session_state or st.session_state.page not in menus: st.session_state.page=menus[0]
-    icons={"Dashboard":"⌂","Form Permintaan Material":"▣","Riwayat Permohonan":"☷","Approval Material":"✓","Dokumen Persetujuan":"▤","Profile":"●"}
+    icons={"Dashboard":"⌂","Form Permintaan Material":"▤","Riwayat Permohonan":"☷","Approval Workspace":"♟","Dokumen Persetujuan":"▧","Profile":"●"}
     for m in menus:
-        label=f"{icons.get(m,'')}  {m}"
+        label=f"{icons.get(m,'')}   {m}"
         if st.button(label,use_container_width=True,type="primary" if st.session_state.page==m else "secondary",key=f"nav_{m}"):
             st.session_state.page=m; st.rerun()
-    st.markdown("<div style='height:160px'></div>",unsafe_allow_html=True)
-    st.markdown("<div style='font-size:11px;color:#6b879d;line-height:1.35'><b>SINERGI<br>UNTUK LAUTAN<br>INDONESIA</b><br><span style='font-size:9px'>Integrated Maritime Solutions<br>for a Sustainable Indonesia</span></div>",unsafe_allow_html=True)
-    st.markdown("<div style='height:8px'></div>",unsafe_allow_html=True)
-    if st.button("Keluar",use_container_width=True,key="logout"):
-        st.session_state.clear(); st.rerun()
+    st.markdown("<div style='height:235px'></div>",unsafe_allow_html=True)
+    st.markdown("<div style='font-size:11px;color:#2f6f9f;line-height:1.2;padding:0 9px'><b>SINERGI<br>UNTUK LAUTAN<br>INDONESIA</b></div>",unsafe_allow_html=True)
+    st.markdown("<div style='height:125px'></div>",unsafe_allow_html=True)
+    st.markdown("<div style='font-size:8px;color:#2b668f;line-height:1.25;padding:0 9px'>Integrated Maritime Solutions<br>for a Sustainable Indonesia</div>",unsafe_allow_html=True)
 
-# Header bar mirroring the reference mockup
 initials=''.join([x[:1] for x in str(user.get('name','U')).split()[:2]]).upper() or 'U'
 st.markdown(f"""
 <div class='mm-topbar'>
   <div class='mm-topbar-left'>
-    <img src='{data_uri('danantara')}' />
-    <span style='height:28px;width:1px;background:#dce7ef'></span>
-    <img src='{data_uri('bima')}' />
+    <img src='{data_uri('danantara')}'/>
+    <span class='mm-top-sep'></span>
+    <img src='{data_uri('bima')}'/>
   </div>
   <div class='mm-user'>
-    <span style='font-size:16px'>●</span>
+    <span class='mm-bell'>♟</span>
     <div class='mm-avatar'>{initials}</div>
-    <div><b style='color:#314c64'>{user.get('name','User')}</b><br><span>{role}</span></div>
-    <span style='font-size:12px'>⌄</span>
+    <div><b style='color:#214b70;font-size:11px'>{user.get('name','User')}</b><br><span>{role}</span></div>
+    <span style='font-size:14px;color:#315d82;margin-left:6px'>⌄</span>
   </div>
 </div>
 """,unsafe_allow_html=True)
@@ -355,47 +397,102 @@ page=st.session_state.page
 all_req=requests_df(); d=role_filtered(all_req)
 
 if page=="Dashboard":
-    page_title("Dashboard","Ringkasan aktivitas permintaan master material SAP")
-    total=len(d); pending=int(d['Status'].str.contains('Pending',case=False,na=False).sum()) if not d.empty else 0; approved=int(d['Status'].str.contains('Approved Final',case=False,na=False).sum()) if not d.empty else 0
-    # KPI cards with the same compact visual hierarchy as the Word reference
-    k1,k2,k3,k4=st.columns(4)
-    cards=[("▣","TOTAL PERMINTAAN",total,"Request material","#1786c6"),("⌛","PENDING APPROVAL",pending,"L1 • L2 • L3 • L4","#e4a31a"),("✓","APPROVED FINAL",approved,"Telah disetujui sampai Approval L4","#24a36a"),("◷","RATA-RATA PROSES","2,4 Hari","SLA target ≤ 3 hari","#4aa1cf")]
-    for c,(ico,label,val,note,col) in zip([k1,k2,k3,k4],cards):
-        c.markdown(f"<div class='mm-kpi-card' style='border-top-color:{col}'><div style='display:flex;gap:9px;align-items:center'><span style='font-size:19px;color:{col}'>{ico}</span><div><div class='mm-kpi-label'>{label}</div><div class='mm-kpi'>{val}</div><div class='mm-muted'>{note}</div></div></div></div>",unsafe_allow_html=True)
-    st.markdown("<div style='height:10px'></div>",unsafe_allow_html=True)
-    a,b=st.columns([1,1])
-    with a:
-        st.markdown("<div class='mm-section-title'>Status Workflow Approval</div><div class='mm-muted'>Distribusi status permintaan master material</div>",unsafe_allow_html=True)
-        counts=d['Status'].value_counts() if not d.empty else pd.Series(dtype=int)
-        if not counts.empty:
-            import matplotlib.pyplot as plt
-            fig,ax=plt.subplots(figsize=(4.8,2.8)); ax.pie(counts.values,labels=None,startangle=90,wedgeprops=dict(width=.38,edgecolor='white')); ax.text(0,0.06,str(int(counts.sum())),ha='center',va='center',fontsize=17,fontweight='bold'); ax.text(0,-.14,'Total Req',ha='center',va='center',fontsize=8,color='#71879a'); ax.legend(counts.index,loc='center left',bbox_to_anchor=(1,.5),frameon=False,fontsize=7); ax.set_aspect('equal'); fig.patch.set_alpha(0); st.pyplot(fig,use_container_width=True)
-    with b:
-        st.markdown("<div class='mm-section-title'>Permintaan per Area</div><div class='mm-muted'>Jumlah permintaan material berdasarkan area</div>",unsafe_allow_html=True)
-        ac=d['Area'].replace('', 'Tidak tercatat').value_counts() if not d.empty else pd.Series(dtype=int)
-        if not ac.empty:
-            import matplotlib.pyplot as plt
-            fig,ax=plt.subplots(figsize=(4.8,2.8)); bars=ax.bar(ac.index,ac.values); ax.spines[['top','right','left']].set_visible(False); ax.grid(axis='y',alpha=.15); ax.tick_params(axis='x',labelsize=8); ax.tick_params(axis='y',labelsize=8);
-            for bar,val in zip(bars,ac.values): ax.text(bar.get_x()+bar.get_width()/2,val+.08,str(int(val)),ha='center',fontsize=8)
-            fig.patch.set_alpha(0); st.pyplot(fig,use_container_width=True)
-    c,dcol=st.columns([1,1])
-    with c:
-        st.markdown("<div class='mm-section-title'>Distribusi Material Group</div><div class='mm-muted'>Jumlah permintaan berdasarkan kategori material</div>",unsafe_allow_html=True)
-        mg=d['Material Group'].replace('', 'Lainnya').value_counts().head(6) if not d.empty else pd.Series(dtype=int)
-        if not mg.empty:
-            import matplotlib.pyplot as plt
-            fig,ax=plt.subplots(figsize=(4.8,2.6)); ax.barh(mg.index[::-1],mg.values[::-1]); ax.spines[['top','right','bottom']].set_visible(False); ax.tick_params(axis='y',labelsize=7); ax.tick_params(axis='x',labelsize=7); ax.grid(axis='x',alpha=.13); fig.patch.set_alpha(0); st.pyplot(fig,use_container_width=True)
-    with dcol:
-        st.markdown("<div class='mm-section-title'>Insight Operasional</div>",unsafe_allow_html=True)
-        st.markdown(f"""<div class='mm-insight'>
-        <div style='margin-bottom:10px'><b style='color:#1a78b4'>●</b> Permintaan tertinggi berdasarkan data saat ini berasal dari <b>{(d['Area'].value_counts().index[0] if not d.empty and not d['Area'].value_counts().empty else '-')}</b>.</div>
-        <div style='margin-bottom:10px'><b style='color:#1a78b4'>●</b> Sebanyak <b>{pending}</b> permintaan masih menunggu proses approval.</div>
-        <div><b style='color:#1a78b4'>●</b> Dashboard menampilkan data sesuai hak akses role pengguna.</div>
-        </div>""",unsafe_allow_html=True)
-    st.markdown("<div style='display:flex;justify-content:space-between;align-items:center;margin-top:8px'><div><b style='font-size:14px;color:#203e58'>Aktivitas Terkini</b><div class='mm-muted'>Daftar permintaan material terbaru yang sedang atau telah diproses</div></div><div style='font-size:11px;color:#1878b5;font-weight:700'>Lihat Semua Permintaan →</div></div>",unsafe_allow_html=True)
-    act=ws_df(ACTIVITY_SHEET); activity_table(act if not act.empty else all_req,8)
+    total=len(d)
+    statuses=d['Status'].fillna('').astype(str) if not d.empty else pd.Series(dtype=str)
+    pending=int(statuses.str.contains('Pending',case=False,na=False).sum()) if not d.empty else 0
+    approved=int(statuses.str.contains('Approved Final',case=False,na=False).sum()) if not d.empty else 0
+    rejected=int(statuses.str.contains('Rejected',case=False,na=False).sum()) if not d.empty else 0
+    p1=int(statuses.str.contains('Pending L1',case=False,na=False).sum()) if not d.empty else 0
+    p2=int(statuses.str.contains('Pending L2',case=False,na=False).sum()) if not d.empty else 0
+    p3=int(statuses.str.contains('Pending L3',case=False,na=False).sum()) if not d.empty else 0
+    p4=int(statuses.str.contains('Pending L4',case=False,na=False).sum()) if not d.empty else 0
+    month_name={1:'Januari',2:'Februari',3:'Maret',4:'April',5:'Mei',6:'Juni',7:'Juli',8:'Agustus',9:'September',10:'Oktober',11:'November',12:'Desember'}[datetime.now().month]
+    st.markdown(f"""
+    <div class='mm-pagehead'>
+      <div><div class='mm-title'>Dashboard</div><div class='mm-sub'>Ringkasan aktivitas permintaan master material SAP</div></div>
+      <div><div style='font-size:8px;color:#71889b;margin-bottom:4px'>Periode Data</div><div class='mm-period'>▣ &nbsp; {month_name} {datetime.now().year} &nbsp;&nbsp;&nbsp;&nbsp;⌄</div></div>
+    </div>
+    <div class='mm-kpi-grid'>
+      <div class='mm-kpi-card' style='--accent:#0879c9;--soft:#e9f4fc'><div class='mm-kpi-flex'><div class='mm-kpi-icon'>▣</div><div><div class='mm-kpi-label'>Total Permintaan</div><div class='mm-kpi-value'>{total}</div><div class='mm-kpi-note'>Request Material</div><div class='mm-kpi-mini'>Periode hingga {datetime.now().strftime('%d %b %Y')}</div></div></div></div>
+      <div class='mm-kpi-card' style='--accent:#f0a514;--soft:#fff4d9'><div class='mm-kpi-flex'><div class='mm-kpi-icon'>⌛</div><div><div class='mm-kpi-label'>Pending Approval</div><div class='mm-kpi-value'>{pending}</div><div class='mm-kpi-note'>Menunggu proses persetujuan</div><div class='mm-kpi-mini'>L1 <b>{p1}</b> &nbsp; L2 <b>{p2}</b> &nbsp; L3 <b>{p3}</b> &nbsp; L4 <b>{p4}</b></div></div></div></div>
+      <div class='mm-kpi-card' style='--accent:#1aaa67;--soft:#e6f7ef'><div class='mm-kpi-flex'><div class='mm-kpi-icon'>✓</div><div><div class='mm-kpi-label'>Approved Final</div><div class='mm-kpi-value'>{approved}</div><div class='mm-kpi-note'>Telah disetujui sampai<br>Approval L4</div></div></div></div>
+      <div class='mm-kpi-card' style='--accent:#2a98e3;--soft:#eaf5fd'><div class='mm-kpi-flex'><div class='mm-kpi-icon'>◷</div><div><div class='mm-kpi-label'>Rata-rata Lama Proses</div><div class='mm-kpi-value' style='font-size:25px'>2,4 Hari</div><div class='mm-kpi-note'>SLA Target<br>≤ 3 Hari</div></div></div></div>
+    </div>
+    """,unsafe_allow_html=True)
+
+    # Workflow donut. CSS is used so the shape and spacing stay consistent with the supplied mockup.
+    vals=[approved,p1,p2,p3,p4,rejected]
+    colors=['#0874c8','#4ca9ea','#f7a408','#ffd166','#9c78e8','#f04c4c']
+    names=['Approved Final','Pending L1','Pending L2','Pending L3','Pending L4','Rejected']
+    base=max(sum(vals),1); cursor=0.0; stops=[]
+    for v,col in zip(vals,colors):
+        nxt=cursor+(v/base)*100; stops.append(f"{col} {cursor:.2f}% {nxt:.2f}%"); cursor=nxt
+    if sum(vals)==0: stops=['#e6eef5 0% 100%']
+    legend=''.join([f"<div class='mm-legend-row'><span class='mm-dot' style='background:{col}'></span><span>{name}</span><b>{v} ({(v/base*100 if sum(vals) else 0):.1f}%)</b></div>" for name,v,col in zip(names,vals,colors)])
+
+    area_counts=d['Area'].replace('', 'Tidak tercatat').value_counts() if not d.empty else pd.Series(dtype=int)
+    area_counts=area_counts.head(4)
+    area_max=max([int(x) for x in area_counts.values],default=1)
+    areabars=''
+    for idx,(name,val) in enumerate(area_counts.items()):
+        h=max(8,int((int(val)/area_max)*100)); cls='' if idx==0 else ' alt'
+        areabars+=f"<div class='mm-bar-col'><div class='mm-vbar{cls}' style='height:{h}%'><b>{int(val)}</b></div><span class='mm-xlabel'>{html.escape(str(name))}</span></div>"
+    if not areabars: areabars="<div style='font-size:10px;color:#7e91a4'>Belum ada data area.</div>"
+
+    mg_counts=d['Material Group'].replace('', 'Lainnya').value_counts().head(6) if not d.empty else pd.Series(dtype=int)
+    mg_max=max([int(x) for x in mg_counts.values],default=1)
+    mgrows=''
+    for name,val in mg_counts.items():
+        w=max(6,int((int(val)/mg_max)*100)); mgrows+=f"<div class='mm-hrow'><span>{html.escape(str(name)[:18])}</span><div class='mm-htrack'><div class='mm-hfill' style='width:{w}%'></div></div><b>{int(val)}</b></div>"
+    if not mgrows: mgrows="<div style='font-size:10px;color:#7e91a4'>Belum ada data material group.</div>"
+
+    top_area=area_counts.index[0] if len(area_counts) else '-'; top_area_n=int(area_counts.iloc[0]) if len(area_counts) else 0
+    top_mg=mg_counts.index[0] if len(mg_counts) else '-'; top_mg_n=int(mg_counts.iloc[0]) if len(mg_counts) else 0
+    st.markdown(f"""
+    <div class='mm-dashboard-grid'>
+      <div class='mm-panel'>
+        <div class='mm-panel-title'>Status Workflow Approval</div><div class='mm-panel-sub'>Distribusi status permintaan master material</div>
+        <div class='mm-donut-wrap'><div class='mm-donut' style='background:conic-gradient({','.join(stops)})'><div class='mm-donut-hole'><b>{total}</b><span>Total Request</span></div></div><div class='mm-legend'>{legend}</div></div>
+      </div>
+      <div class='mm-panel'>
+        <div class='mm-panel-title'>Permintaan per Area</div><div class='mm-panel-sub'>Jumlah permintaan master material berdasarkan area</div>
+        <div class='mm-bars'>{areabars}</div>
+      </div>
+    </div>
+    <div class='mm-dashboard-grid'>
+      <div class='mm-panel small'>
+        <div class='mm-panel-title'>Distribusi Material Group</div><div class='mm-panel-sub'>Jumlah permintaan berdasarkan kategori material</div><div class='mm-hbars'>{mgrows}</div>
+      </div>
+      <div class='mm-panel small'>
+        <div style='display:flex;justify-content:space-between'><div class='mm-panel-title'>💡 Insight Operasional</div><div class='mm-link'>Lihat Detail →</div></div>
+        <div class='mm-insights'>
+          <div class='mm-insight'><span class='mm-num'>1</span><span>Permintaan tertinggi berasal dari <b>{html.escape(str(top_area))}</b> dengan total <b>{top_area_n}</b> request.</span></div>
+          <div class='mm-insight'><span class='mm-num'>2</span><span>Sebagian besar permintaan masih menunggu persetujuan. Total pending saat ini <b>{pending}</b> request.</span></div>
+          <div class='mm-insight'><span class='mm-num'>3</span><span>Kategori material yang paling sering diajukan adalah <b>{html.escape(str(top_mg))}</b> dengan <b>{top_mg_n}</b> request.</span></div>
+        </div>
+      </div>
+    </div>
+    """,unsafe_allow_html=True)
+
+    recent=canonical(d).head(5)
+    rows=''
+    for _,r in recent.iterrows():
+        status=str(r['Status']); sl=status.lower()
+        if 'approved' in sl: sc='#0ca968'; sb='#e8f8f0'
+        elif 'reject' in sl: sc='#e64949'; sb='#fdecec'
+        else: sc='#e49a08' if 'l2' in sl else '#1687d5'; sb='#fff5df' if 'l2' in sl else '#eaf6ff'
+        area_site=' - '.join([x for x in [str(r['Area']).strip(),str(r['Site']).strip()] if x and x!='nan'])
+        rows+=f"<tr><td><b>{html.escape(str(r['ID Request']))}</b></td><td>{html.escape(str(r['Tanggal']))}</td><td>{html.escape(str(r['Pemohon']))}</td><td>{html.escape(area_site)}</td><td>{html.escape(str(r['Nama Barang']))}</td><td>{html.escape(str(r['Material Group']))}</td><td><span class='mm-status' style='color:{sc};background:{sb}'>{html.escape(status)}</span></td><td><span class='mm-detail'>Detail</span></td></tr>"
+    if not rows: rows="<tr><td colspan='8' style='text-align:center;color:#8194a4'>Belum ada aktivitas permintaan.</td></tr>"
+    st.markdown(f"""
+    <div class='mm-activity'>
+      <div class='mm-activity-head'><div><div class='mm-panel-title'>Aktivitas Terkini</div><div class='mm-panel-sub' style='margin:0'>Daftar permintaan master material yang paling baru diajukan</div></div><div class='mm-link'>Lihat Semua Permintaan →</div></div>
+      <table class='mm-table'><thead><tr><th>ID REQ</th><th>TANGGAL</th><th>PEMOHON</th><th>AREA & SITE</th><th>NAMA BARANG</th><th>MATERIAL GROUP</th><th>STATUS</th><th>AKSI</th></tr></thead><tbody>{rows}</tbody></table>
+    </div>
+    """,unsafe_allow_html=True)
 
 elif page=="Form Permintaan Material":
+
     page_title("Form Permintaan Master Material Baru","Lengkapi data dan material baru untuk diproses")
     if level>0: st.info("Sesuai alur, pengajuan baru dilakukan oleh Pemohon. Anda tetap dapat melihat form, tetapi tombol kirim dinonaktifkan untuk role approver.")
     with st.form("material_form",clear_on_submit=False):
@@ -446,7 +543,7 @@ elif page=="Riwayat Permohonan":
     for c,l,v in [(k1,"Total Permintaan",len(f)),(k2,"Pending Approval",f['Status'].str.contains('Pending',case=False).sum()),(k3,"Approved Final",f['Status'].str.contains('Approved Final',case=False).sum()),(k4,"Rejected",f['Status'].str.contains('Rejected',case=False).sum())]: c.metric(l,int(v))
     activity_table(f,50)
 
-elif page=="Approval Material":
+elif page=="Approval Workspace":
     page_title(f"Approval Material L{level}","Review data permohonan, beri catatan, lalu setujui atau tolak")
     target=f"Pending L{level}"
     q=canonical(all_req); q=q[q['Status']==target]
