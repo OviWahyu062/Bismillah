@@ -18,7 +18,7 @@ ALLOW_DEMO_LOGIN = False
 LOGIN_SHEET = "Data Username + Password"
 ACTIVITY_SHEET = "Data Aktivitas Terkini"
 REQUEST_SHEET = "Data Permohonan Material"
-APPROVAL_SHEET = "Data Approval"
+APPROVAL_SHEET = "Approval History"
 
 ROLES = ["Pemohon (User)", "Approver L1 (Admin Peralatan Area)", "Approver L2 (Manper Area)", "Approver L3 (Manager Akuntansi)", "Approval L4 (Manager Persediaan)"]
 ROLE_LEVEL = {ROLES[0]:0, ROLES[1]:1, ROLES[2]:2, ROLES[3]:3, ROLES[4]:4}
@@ -173,107 +173,153 @@ def requests_df():
 # ---------- Styling ----------
 st.markdown(f"""
 <style>
-:root{{--c-blue:#0b65b5;--c-blue2:#0f7ed0;--c-navy:#143f69;--c-text:#254d73;--c-muted:#718aa3;--c-line:#dce9f3;--c-bg:#f6faff;--side:138px;--top:54px;}}
+:root{{--brand:#086fbe;--brand-dark:#0b4f86;--brand-2:#1193da;--navy:#173d63;--ink:#1d3f5f;--text:#355a79;--muted:#758ba0;--line:#dbe7f0;--soft:#f4f9fd;--bg:#f5f9fd;--success:#16a36a;--warning:#f2a414;--danger:#e84d4d;--side:184px;--top:66px;--radius:12px;--shadow:0 4px 18px rgba(33,76,108,.07);}}
 *{{box-sizing:border-box}}
-html,body,[class*="css"]{{font-family:"Segoe UI",Arial,sans-serif!important}}
-html,body,.stApp{{background:var(--c-bg)!important;color:var(--c-text)!important}}
+html,body,[class*="css"]{{font-family:"Segoe UI",Inter,Arial,sans-serif!important}}
+html,body,.stApp{{background:linear-gradient(180deg,#f8fbfe 0%,#f3f8fc 100%)!important;color:var(--text)!important}}
 #MainMenu,footer,header[data-testid="stHeader"],[data-testid="stSidebar"],[data-testid="collapsedControl"],[data-testid="stToolbar"],div[data-testid="stDecoration"]{{display:none!important}}
-.block-container{{padding:calc(var(--top) + 12px) 14px 18px calc(var(--side) + 12px)!important;max-width:none!important;width:100%!important}}
-/* exact desktop shell */
-.mm-topbar{{position:fixed;z-index:10000;left:0;top:0;right:0;height:var(--top);background:#fff;border-bottom:1px solid #d9e6f0;display:flex;align-items:center;justify-content:space-between;padding:0 14px 0 17px;box-shadow:0 1px 5px rgba(34,76,109,.06)}}
-.mm-topbar-left{{display:flex;align-items:center;gap:13px;height:100%}}
-.mm-topbar-left img:first-child{{width:98px;height:38px;object-fit:contain;object-position:left center}}
-.mm-topbar-left img:last-child{{width:102px;height:42px;object-fit:contain}}
-.mm-top-sep{{width:1px;height:26px;background:#c9d8e4}}
-.mm-user{{display:flex;align-items:center;gap:8px;color:#617c95;font-size:9px;line-height:1.15}}
-.mm-user b{{font-size:10px!important;color:#173f67!important}}
-.mm-avatar{{width:25px;height:25px;border-radius:50%;background:#14588f;color:#fff;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;box-shadow:inset 0 0 0 2px #e9f3fb}}
-.mm-bell{{position:relative;width:21px;height:21px;display:flex;align-items:center;justify-content:center;color:#34688f;margin-right:2px}}
-.mm-bell svg{{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.9}}
-.mm-bell:after{{content:'1';position:absolute;right:-1px;top:-2px;background:#ef4a43;color:#fff;width:10px;height:10px;border-radius:50%;font-size:6px;line-height:10px;text-align:center;font-weight:700}}
-.mm-sidebar{{position:fixed;z-index:9999;left:0;top:var(--top);bottom:0;width:var(--side);border-right:1px solid #d5e5f1;background:#edf7fd url('{data_uri('sidebar')}') left bottom/100% 100% no-repeat;overflow:hidden}}
-.mm-nav{{padding-top:0}}
-.mm-nav-item{{position:relative;display:flex;align-items:center;gap:8px;height:43px;padding:0 14px;color:#315a7c;text-decoration:none;font-size:9px;font-weight:600;border-radius:0;margin:0;border-bottom:1px solid rgba(220,233,243,.5);pointer-events:none}}
-.mm-nav-item.active{{background:linear-gradient(90deg,#0b61ad 0%,#0c72c4 100%);color:#fff}}
-.mm-nav .ico{{width:15px;height:15px;display:flex;align-items:center;justify-content:center;flex:0 0 15px}}
-.mm-nav .ico svg{{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}}
-.mm-badge{{margin-left:auto;background:#f4a100;color:#fff;border-radius:999px;min-width:15px;height:15px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800}}
-.mm-side-slogan{{position:absolute;left:14px;bottom:31%;font-size:11px;line-height:1.06;color:#4f84af;font-weight:500;text-transform:uppercase;letter-spacing:.01em}}
-.mm-side-foot{{display:none}}
-/* Native Streamlit buttons are used only as an invisible click layer over the custom sidebar.
-   This preserves session_state because navigation no longer reloads the browser. */
-div[data-testid="stVerticalBlock"]:has(#mm-nav-click-layer){{
-  position:fixed!important;z-index:10020!important;left:0!important;top:var(--top)!important;
-  width:var(--side)!important;padding:0!important;margin:0!important;gap:0!important;
-  background:transparent!important;pointer-events:none!important;
-}}
+.block-container{{padding:calc(var(--top) + 22px) 26px 30px calc(var(--side) + 26px)!important;max-width:none!important;width:100%!important}}
+
+/* App shell */
+.mm-topbar{{position:fixed;z-index:10000;left:0;top:0;right:0;height:var(--top);background:rgba(255,255,255,.97);border-bottom:1px solid #dce7f0;display:flex;align-items:center;justify-content:space-between;padding:0 24px 0 18px;box-shadow:0 2px 12px rgba(38,75,104,.06);backdrop-filter:blur(8px)}}
+.mm-topbar-left{{display:flex;align-items:center;gap:15px;height:100%}}
+.mm-topbar-left img:first-child{{width:111px;height:45px;object-fit:contain;object-position:left center}}
+.mm-topbar-left img:last-child{{width:116px;height:47px;object-fit:contain}}
+.mm-top-sep{{width:1px;height:31px;background:#cbdbe7}}
+.mm-user{{display:flex;align-items:center;gap:10px;color:#6d8498;font-size:11px;line-height:1.2}}
+.mm-user b{{font-size:12px!important;color:#173f67!important}}
+.mm-avatar{{width:34px;height:34px;border-radius:50%;background:linear-gradient(145deg,#0f6db4,#174e7c);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;box-shadow:inset 0 0 0 2px #e9f4fb,0 2px 6px rgba(22,70,106,.14)}}
+.mm-bell{{position:relative;width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:#34688f;margin-right:2px}}
+.mm-bell svg{{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.9}}
+.mm-bell:after{{content:'1';position:absolute;right:0;top:0;background:#ef4a43;color:#fff;width:12px;height:12px;border-radius:50%;font-size:7px;line-height:12px;text-align:center;font-weight:800;box-shadow:0 0 0 2px #fff}}
+
+.mm-sidebar{{position:fixed;z-index:9999;left:0;top:var(--top);bottom:0;width:var(--side);border-right:1px solid #d7e5ef;background:#edf7fd url('{data_uri('sidebar')}') center bottom/cover no-repeat;overflow:hidden}}
+.mm-sidebar:after{{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(247,252,255,.98) 0%,rgba(239,248,253,.92) 35%,rgba(235,247,253,.16) 75%,rgba(235,247,253,.02) 100%)}}
+.mm-nav{{padding:10px 10px 0}}
+.mm-nav-item{{position:relative;display:flex;align-items:center;gap:10px;height:46px;padding:0 12px;color:#355d7e;text-decoration:none;font-size:11px;font-weight:600;border-radius:9px;margin:2px 0;pointer-events:none;transition:.2s}}
+.mm-nav-item.active{{background:linear-gradient(100deg,#0c64b1 0%,#0e79ca 100%);color:#fff;box-shadow:0 6px 14px rgba(6,101,178,.20)}}
+.mm-nav .ico{{width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex:0 0 18px}}
+.mm-nav .ico svg{{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}}
+.mm-badge{{margin-left:auto;background:#f4a100;color:#fff;border-radius:999px;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;box-shadow:0 2px 5px rgba(211,139,0,.18)}}
+.mm-side-slogan{{position:absolute;left:18px;bottom:27%;font-size:12px;line-height:1.22;color:#317cae;font-weight:600;text-transform:uppercase;letter-spacing:.015em;text-shadow:0 1px 0 rgba(255,255,255,.55)}}
+
+/* Invisible native buttons preserve Streamlit session navigation */
+div[data-testid="stVerticalBlock"]:has(#mm-nav-click-layer){{position:fixed!important;z-index:10020!important;left:10px!important;top:calc(var(--top) + 10px)!important;width:calc(var(--side) - 20px)!important;padding:0!important;margin:0!important;gap:2px!important;background:transparent!important;pointer-events:none!important}}
 div[data-testid="stVerticalBlock"]:has(#mm-nav-click-layer) > div:has(#mm-nav-click-layer){{display:none!important;height:0!important;margin:0!important;padding:0!important}}
-div[data-testid="stVerticalBlock"]:has(#mm-nav-click-layer) .stButton{{height:43px!important;min-height:43px!important;margin:0!important;padding:0!important;pointer-events:auto!important}}
-div[data-testid="stVerticalBlock"]:has(#mm-nav-click-layer) .stButton > button{{
-  width:100%!important;height:43px!important;min-height:43px!important;margin:0!important;padding:0!important;
-  border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;
-  opacity:0!important;cursor:pointer!important;
-}}
-div[data-testid="stVerticalBlock"]:has(#mm-nav-click-layer) .stButton > button:hover{{background:transparent!important}}
-/* page header */
-.mm-pagehead{{display:flex;justify-content:space-between;align-items:flex-start;margin:0 0 10px}}
-.mm-title{{font-size:25px;line-height:1;font-weight:800;color:#163f68;letter-spacing:-.035em;margin:0 0 3px}}
-.mm-sub{{font-size:9.5px;color:#6f879d;margin:0}}
-.mm-period{{background:#fff;border:1px solid #d9e6f0;border-radius:6px;padding:7px 9px;min-width:158px;color:#315b7e;font-size:8.5px;box-shadow:0 1px 4px rgba(31,72,103,.03)}}
-/* dashboard */
-.mm-kpi-grid{{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:8px}}
-.mm-kpi-card{{position:relative;background:#fff;border:1px solid #dce8f2;border-radius:7px;padding:10px 10px 9px;min-height:98px;box-shadow:0 2px 7px rgba(41,84,118,.04);overflow:hidden}}
-.mm-kpi-card:before{{content:'';position:absolute;left:0;top:0;width:28%;height:2px;background:var(--accent)}}
-.mm-kpi-flex{{display:flex;align-items:flex-start;gap:9px}}
-.mm-kpi-icon{{width:36px;height:36px;border-radius:8px;background:var(--soft);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:19px;flex:0 0 auto}}
-.mm-kpi-label{{font-size:7.8px;font-weight:800;color:#355776;text-transform:uppercase;margin-top:2px;white-space:nowrap}}
-.mm-kpi-value{{font-size:25px;font-weight:800;color:#113f6c;line-height:1.04;margin:4px 0 3px}}
-.mm-kpi-note{{font-size:7.7px;color:#70879b;line-height:1.25}}
-.mm-kpi-mini{{font-size:7px;color:#45647e;margin-top:4px;word-spacing:2px}}
-.mm-dashboard-grid{{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}}
-.mm-panel{{background:#fff;border:1px solid #dce8f2;border-radius:7px;padding:10px 12px;box-shadow:0 2px 7px rgba(41,84,118,.04);min-height:213px}}
-.mm-panel.small{{min-height:165px}}
-.mm-panel-title{{font-size:12px;font-weight:800;color:#193f61;margin-bottom:1px}}
-.mm-panel-sub{{font-size:7.7px;color:#778ea2;margin-bottom:8px}}
-.mm-donut-wrap{{display:flex;align-items:center;gap:20px;padding:0 5px}}
-.mm-donut{{width:140px;height:140px;border-radius:50%;position:relative;flex:0 0 auto}}
-.mm-donut-hole{{position:absolute;inset:29px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#113f6c}}
-.mm-donut-hole b{{font-size:22px;line-height:1}}
-.mm-donut-hole span{{font-size:7.5px;color:#72899f;margin-top:3px}}
-.mm-legend{{flex:1;font-size:7.8px;color:#294d6e}}
-.mm-legend-row{{display:grid;grid-template-columns:8px 1fr auto;gap:5px;align-items:center;margin:7px 0}}
-.mm-dot{{width:7px;height:7px;border-radius:50%}}
-.mm-bars{{height:145px;display:flex;align-items:flex-end;gap:20px;padding:10px 9px 19px 26px;border-left:1px solid #e6eef4;border-bottom:1px solid #e6eef4;background:repeating-linear-gradient(to top,transparent 0,transparent 27px,#edf3f7 28px)}}
+div[data-testid="stVerticalBlock"]:has(#mm-nav-click-layer) .stButton{{height:46px!important;min-height:46px!important;margin:0!important;padding:0!important;pointer-events:auto!important}}
+div[data-testid="stVerticalBlock"]:has(#mm-nav-click-layer) .stButton > button{{width:100%!important;height:46px!important;min-height:46px!important;margin:0!important;padding:0!important;border:0!important;border-radius:9px!important;background:transparent!important;box-shadow:none!important;opacity:0!important;cursor:pointer!important}}
+
+/* Page hierarchy */
+.mm-pagehead{{display:flex;justify-content:space-between;align-items:flex-start;margin:0 0 18px;gap:18px}}
+.mm-title{{font-size:30px;line-height:1.05;font-weight:800;color:#173d63;letter-spacing:-.035em;margin:0 0 6px}}
+.mm-sub{{font-size:12px;color:#70889d;margin:0;line-height:1.45}}
+.mm-breadcrumb{{font-size:10px;color:#8ba0b3;margin:0 0 6px}}
+.mm-period{{background:#fff;border:1px solid #d8e5ef;border-radius:9px;padding:9px 12px;min-width:178px;color:#315b7e;font-size:11px;box-shadow:0 2px 8px rgba(31,72,103,.04)}}
+.mm-page-note{{display:flex;gap:10px;align-items:flex-start;background:linear-gradient(90deg,#eef8ff,#f8fcff);border:1px solid #d9eaf6;border-left:4px solid var(--brand);border-radius:10px;padding:12px 14px;margin:12px 0 16px;color:#4a6d89;font-size:11px;line-height:1.5}}
+.mm-page-note b{{color:#214e72}}
+
+/* Dashboard */
+.mm-kpi-grid{{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:12px}}
+.mm-kpi-card{{position:relative;background:#fff;border:1px solid #dce8f1;border-radius:var(--radius);padding:15px 15px 13px;min-height:116px;box-shadow:var(--shadow);overflow:hidden}}
+.mm-kpi-card:before{{content:'';position:absolute;left:0;top:0;width:34%;height:3px;background:var(--accent);border-radius:0 0 3px 0}}
+.mm-kpi-flex{{display:flex;align-items:flex-start;gap:12px}}
+.mm-kpi-icon{{width:43px;height:43px;border-radius:11px;background:var(--soft);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:21px;flex:0 0 auto;font-weight:700}}
+.mm-kpi-label{{font-size:10px;font-weight:800;color:#3a5873;text-transform:uppercase;margin-top:2px;white-space:nowrap;letter-spacing:.015em}}
+.mm-kpi-value{{font-size:30px;font-weight:800;color:#123e69;line-height:1.02;margin:6px 0 4px;letter-spacing:-.025em}}
+.mm-kpi-note{{font-size:9.5px;color:#72899d;line-height:1.35}}
+.mm-kpi-mini{{font-size:9px;color:#466680;margin-top:5px;word-spacing:2px}}
+.mm-dashboard-grid{{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}}
+.mm-panel{{background:#fff;border:1px solid #dce8f1;border-radius:var(--radius);padding:16px 17px;box-shadow:var(--shadow);min-height:252px}}
+.mm-panel.small{{min-height:198px}}
+.mm-panel-title{{font-size:14px;font-weight:800;color:#193f61;margin-bottom:2px;letter-spacing:-.012em}}
+.mm-panel-sub{{font-size:9.5px;color:#778ea2;margin-bottom:12px;line-height:1.35}}
+.mm-donut-wrap{{display:flex;align-items:center;justify-content:center;gap:28px;padding:6px 8px 0}}
+.mm-donut{{width:166px;height:166px;border-radius:50%;position:relative;flex:0 0 auto;box-shadow:inset 0 0 0 1px rgba(13,87,144,.03)}}
+.mm-donut-hole{{position:absolute;inset:36px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#113f6c;box-shadow:0 0 0 1px #edf3f7}}
+.mm-donut-hole b{{font-size:28px;line-height:1}}
+.mm-donut-hole span{{font-size:9px;color:#72899f;margin-top:4px}}
+.mm-legend{{flex:1;max-width:235px;font-size:10px;color:#294d6e}}
+.mm-legend-row{{display:grid;grid-template-columns:9px 1fr auto;gap:7px;align-items:center;margin:8px 0}}
+.mm-dot{{width:8px;height:8px;border-radius:50%}}
+.mm-bars{{height:176px;display:flex;align-items:flex-end;gap:26px;padding:18px 16px 24px 32px;border-left:1px solid #e5edf4;border-bottom:1px solid #e5edf4;background:repeating-linear-gradient(to top,transparent 0,transparent 34px,#edf3f7 35px)}}
 .mm-bar-col{{flex:1;text-align:center;position:relative;height:100%;display:flex;align-items:flex-end;justify-content:center}}
-.mm-vbar{{width:46px;max-width:72%;border-radius:3px 3px 0 0;background:linear-gradient(#0f79ca,#075fa8);position:relative}}
-.mm-vbar.alt{{background:linear-gradient(#74bff0,#5ba8df)}}
-.mm-vbar b{{position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-size:8.5px;color:#214a6e}}
-.mm-xlabel{{position:absolute;bottom:-16px;font-size:7.5px;color:#566f87;white-space:nowrap}}
-.mm-hbars{{padding:1px 2px}}
-.mm-hrow{{display:grid;grid-template-columns:72px 1fr 24px;gap:6px;align-items:center;margin:6px 0;font-size:7.7px;color:#45657f}}
-.mm-htrack{{height:9px;background:#edf5fb;border-radius:3px;overflow:hidden}}
-.mm-hfill{{height:100%;border-radius:3px;background:linear-gradient(90deg,#0875c4,#4ca9e7)}}
-.mm-insights{{background:linear-gradient(180deg,#f6fbff,#eff8ff);border-radius:6px;padding:3px 8px}}
-.mm-insight{{display:grid;grid-template-columns:19px 1fr;gap:7px;align-items:flex-start;padding:7px 0;border-bottom:1px solid #deecf6;font-size:7.8px;color:#315a7d;line-height:1.35}}
+.mm-vbar{{width:54px;max-width:74%;border-radius:5px 5px 0 0;background:linear-gradient(#1684d2,#0862ad);position:relative;box-shadow:0 3px 8px rgba(9,100,176,.10)}}
+.mm-vbar.alt{{background:linear-gradient(#7bc6f3,#56a8df)}}
+.mm-vbar b{{position:absolute;top:-19px;left:50%;transform:translateX(-50%);font-size:10px;color:#214a6e}}
+.mm-xlabel{{position:absolute;bottom:-21px;font-size:9px;color:#566f87;white-space:nowrap}}
+.mm-hbars{{padding:3px 2px}}
+.mm-hrow{{display:grid;grid-template-columns:100px 1fr 30px;gap:8px;align-items:center;margin:8px 0;font-size:9.5px;color:#45657f}}
+.mm-htrack{{height:11px;background:#edf5fb;border-radius:4px;overflow:hidden}}
+.mm-hfill{{height:100%;border-radius:4px;background:linear-gradient(90deg,#0875c4,#4ca9e7)}}
+.mm-insights{{background:linear-gradient(180deg,#f7fbff,#eef8ff);border-radius:9px;padding:4px 11px;border:1px solid #e6f0f7}}
+.mm-insight{{display:grid;grid-template-columns:23px 1fr;gap:9px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #deecf6;font-size:9.8px;color:#315a7d;line-height:1.45}}
 .mm-insight:last-child{{border-bottom:0}}
-.mm-num{{width:18px;height:18px;border-radius:50%;background:#0b6fbd;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:7.5px}}
-.mm-link{{font-size:7.5px;color:#0678c8;font-weight:700}}
-.mm-activity{{background:#fff;border:1px solid #dce8f2;border-radius:7px;padding:9px 11px;box-shadow:0 2px 7px rgba(41,84,118,.04)}}
-.mm-activity-head{{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}}
-.mm-table{{width:100%;border-collapse:separate;border-spacing:0;font-size:7.2px;color:#365a78}}
-.mm-table th{{background:#f2f7fb;color:#617b92;text-align:left;padding:5px 5px;font-size:6.6px;text-transform:uppercase;border-top:1px solid #e5edf4;border-bottom:1px solid #e5edf4}}
-.mm-table td{{padding:5px;border-bottom:1px solid #edf2f6;background:#fff;vertical-align:middle}}
-.mm-status{{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:999px;font-size:6.6px;font-weight:700;white-space:nowrap}}
-.mm-status:before{{content:'';width:4px;height:4px;border-radius:50%;background:currentColor}}
-.mm-detail{{display:inline-block;padding:2px 7px;border:1px solid #d6e5f0;border-radius:4px;color:#0877c4;font-size:6.6px;font-weight:700;background:#f9fcff}}
-/* Streamlit controls harmonized to mockup */
-[data-testid="stForm"],.stForm{{background:#fff!important;border:1px solid #dce8f2!important;border-radius:8px!important;padding:14px!important;box-shadow:0 2px 7px rgba(41,84,118,.04)!important}}
-[data-testid="stMetric"]{{background:#fff!important;border:1px solid #dce8f2!important;border-radius:8px!important;padding:10px!important}}
-.stTextInput input,.stTextArea textarea,[data-baseweb="select"]>div,.stDateInput input{{border-radius:5px!important;border-color:#d8e6f1!important;font-size:10px!important}}
-.stButton>button,.stDownloadButton>button,.stFormSubmitButton>button{{border-radius:5px!important;font-size:10px!important;min-height:34px!important}}
-/* secondary pages */
-.mm-card{{background:#fff;border:1px solid #dce8f2;border-radius:8px;padding:14px;box-shadow:0 2px 7px rgba(41,84,118,.04)}}
-@media(max-width:1050px){{:root{{--side:138px}}.mm-kpi-grid{{grid-template-columns:repeat(2,1fr)}}.mm-dashboard-grid{{grid-template-columns:1fr}}}}
+.mm-num{{width:21px;height:21px;border-radius:50%;background:#0b6fbd;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:9px;box-shadow:0 2px 6px rgba(8,101,174,.16)}}
+.mm-link{{font-size:9.5px;color:#0678c8;font-weight:700}}
+.mm-activity{{background:#fff;border:1px solid #dce8f1;border-radius:var(--radius);padding:14px 16px 12px;box-shadow:var(--shadow)}}
+.mm-activity-head{{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px}}
+.mm-table{{width:100%;border-collapse:separate;border-spacing:0;font-size:9px;color:#365a78}}
+.mm-table th{{background:#f1f6fa;color:#607b92;text-align:left;padding:8px 7px;font-size:8px;text-transform:uppercase;border-top:1px solid #e5edf4;border-bottom:1px solid #e5edf4;letter-spacing:.02em}}
+.mm-table th:first-child{{border-radius:7px 0 0 0}}.mm-table th:last-child{{border-radius:0 7px 0 0}}
+.mm-table td{{padding:8px 7px;border-bottom:1px solid #edf2f6;background:#fff;vertical-align:middle}}
+.mm-table tr:hover td{{background:#fbfdff}}
+.mm-status{{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border-radius:999px;font-size:8px;font-weight:700;white-space:nowrap}}
+.mm-status:before{{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}}
+.mm-detail{{display:inline-block;padding:3px 8px;border:1px solid #d6e5f0;border-radius:5px;color:#0877c4;font-size:8px;font-weight:700;background:#f9fcff}}
+
+/* Secondary-page cards */
+.mm-card{{background:#fff;border:1px solid #dce8f1;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}}
+.mm-card-title{{font-size:14px;font-weight:800;color:#1b4467;margin-bottom:4px}}
+.mm-card-sub{{font-size:10px;color:#7a8fa2;margin-bottom:12px}}
+.mm-section-head{{display:flex;align-items:center;gap:9px;margin:5px 0 13px;padding-bottom:9px;border-bottom:1px solid #e9f0f5;color:#194568;font-size:13px;font-weight:800}}
+.mm-section-index{{width:24px;height:24px;border-radius:7px;background:#e8f4fc;color:#0872bf;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800}}
+.mm-summary-grid{{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:12px 0 16px}}
+.mm-summary{{background:#fff;border:1px solid #dce8f1;border-radius:11px;padding:13px 14px;box-shadow:0 3px 12px rgba(33,76,108,.05);position:relative;overflow:hidden}}
+.mm-summary:before{{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}}
+.mm-summary-label{{font-size:9px;text-transform:uppercase;color:#6e8598;font-weight:800;letter-spacing:.03em}}
+.mm-summary-value{{font-size:23px;color:#173f67;font-weight:800;margin-top:4px;line-height:1}}
+.mm-summary-note{{font-size:9px;color:#8296a7;margin-top:4px}}
+.mm-info-list{{display:grid;gap:0;margin-top:6px}}
+.mm-info-row{{display:grid;grid-template-columns:130px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid #edf2f6;font-size:10.5px}}
+.mm-info-row:last-child{{border-bottom:0}}
+.mm-info-row span:first-child{{color:#7c91a4}}.mm-info-row span:last-child{{color:#244e70;font-weight:650}}
+.mm-profile-hero{{display:flex;align-items:center;gap:15px;padding:4px 0 14px;border-bottom:1px solid #edf2f6;margin-bottom:3px}}
+.mm-profile-avatar{{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#0b74c6,#164d79);color:#fff;font-weight:800;font-size:18px;box-shadow:0 5px 14px rgba(13,92,151,.16)}}
+.mm-profile-name{{font-size:17px;font-weight:800;color:#173f67;line-height:1.2}}.mm-profile-role{{font-size:10px;color:#71879a;margin-top:3px}}
+.mm-setting-row{{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid #edf2f6}}
+.mm-setting-row:last-child{{border-bottom:0}}
+.mm-setting-icon{{width:32px;height:32px;border-radius:9px;background:#edf7fd;color:#0b71bd;display:flex;align-items:center;justify-content:center;font-size:15px}}
+.mm-setting-main b{{font-size:10.5px;color:#234c6e}}.mm-setting-main div{{font-size:9px;color:#7c90a2;margin-top:2px}}
+.mm-setting-value{{font-size:9px;color:#3e6684;background:#f4f8fb;border:1px solid #e0eaf2;padding:5px 8px;border-radius:6px}}
+
+/* Native Streamlit components */
+[data-testid="stForm"],.stForm{{background:#fff!important;border:1px solid #dce8f1!important;border-radius:var(--radius)!important;padding:19px 20px 18px!important;box-shadow:var(--shadow)!important}}
+[data-testid="stForm"] h3,.stForm h3{{font-size:13px!important;color:#194568!important;margin:7px 0 11px!important;padding-bottom:9px!important;border-bottom:1px solid #e9f0f5!important}}
+[data-testid="stVerticalBlockBorderWrapper"]{{background:#fff!important;border:1px solid #dce8f1!important;border-radius:var(--radius)!important;box-shadow:var(--shadow)!important}}
+[data-testid="stMetric"]{{background:#fff!important;border:1px solid #dce8f1!important;border-radius:11px!important;padding:12px 14px!important;box-shadow:0 3px 12px rgba(33,76,108,.05)!important}}
+[data-testid="stMetricLabel"]{{font-size:10px!important;color:#70879b!important}}[data-testid="stMetricValue"]{{font-size:24px!important;color:#173f67!important;font-weight:800!important}}
+.stTextInput input,.stTextArea textarea,[data-baseweb="select"]>div,.stDateInput input{{border-radius:8px!important;border:1px solid #d7e4ee!important;font-size:11px!important;background:#fbfdff!important;min-height:39px!important;box-shadow:none!important}}
+.stTextInput input:focus,.stTextArea textarea:focus,[data-baseweb="select"]>div:focus-within{{border-color:#55a8df!important;box-shadow:0 0 0 2px rgba(40,142,208,.10)!important}}
+.stTextArea textarea{{min-height:92px!important;padding:10px!important}}
+[data-testid="stWidgetLabel"] p{{font-size:10px!important;color:#3f617d!important;font-weight:650!important}}
+[data-testid="stFileUploader"]{{background:#f8fbfe!important;border:1px dashed #bed6e8!important;border-radius:9px!important;padding:8px!important}}
+[data-testid="stFileUploaderDropzone"]{{background:transparent!important;border:0!important}}
+.stButton>button,.stDownloadButton>button,.stFormSubmitButton>button{{border-radius:8px!important;font-size:10.5px!important;font-weight:700!important;min-height:38px!important;transition:.18s!important}}
+.stButton>button:hover,.stDownloadButton>button:hover,.stFormSubmitButton>button:hover{{transform:translateY(-1px);box-shadow:0 5px 12px rgba(20,95,150,.10)!important}}
+button[kind="primary"],.stFormSubmitButton button[kind="primary"]{{background:linear-gradient(90deg,#0a69b4,#0c7acb)!important;border-color:#0a69b4!important}}
+[data-testid="stExpander"]{{border:1px solid #dce8f1!important;border-radius:10px!important;background:#fff!important;box-shadow:0 3px 12px rgba(33,76,108,.045)!important;overflow:hidden!important;margin-bottom:9px!important}}
+[data-testid="stExpander"] summary{{font-size:11px!important;color:#214c6d!important;font-weight:750!important;padding:12px 14px!important;background:#fbfdff!important}}
+[data-testid="stAlert"]{{border-radius:9px!important;font-size:10px!important}}
+hr{{border-color:#e8f0f5!important}}
+
+/* Login */
+.mm-login-brand{{font-size:12px;letter-spacing:.16em;color:#5f7e99;text-align:center;font-weight:700;margin-bottom:6px}}
+.mm-login-title{{font-size:28px;line-height:1.1;color:#17466f;text-align:center;font-weight:800;letter-spacing:-.025em;margin:0}}
+.mm-login-sub{{font-size:11px;color:#7a90a3;text-align:center;line-height:1.5;margin:8px 0 16px}}
+.mm-login-foot{{font-size:9px;color:#748b9f;text-align:center;margin-top:10px}}
+
+@media(max-width:1200px){{:root{{--side:170px}}.block-container{{padding-left:calc(var(--side) + 18px)!important;padding-right:18px!important}}.mm-kpi-grid{{grid-template-columns:repeat(2,1fr)}}.mm-dashboard-grid{{grid-template-columns:1fr}}.mm-summary-grid{{grid-template-columns:repeat(2,1fr)}}}}
+@media(max-width:820px){{:root{{--side:74px;--top:62px}}.mm-nav-item span:not(.ico):not(.mm-badge),.mm-side-slogan{{display:none}}.mm-nav-item{{justify-content:center;padding:0}}.mm-sidebar{{background-position:center bottom}}.mm-topbar-left img:first-child{{width:92px}}.mm-topbar-left img:last-child{{width:98px}}.mm-user>div:not(.mm-avatar){{display:none}}.block-container{{padding:calc(var(--top) + 18px) 12px 24px calc(var(--side) + 12px)!important}}.mm-kpi-grid,.mm-summary-grid{{grid-template-columns:1fr}}.mm-title{{font-size:26px}}}}
 </style>""", unsafe_allow_html=True)
 
 # ---------- Authentication ----------
@@ -296,42 +342,40 @@ def verify_login(username,password):
 
 def login_page():
     st.markdown(f"""<style>
-    [data-testid="stSidebar"]{{display:none}} .stApp{{background:linear-gradient(rgba(240,248,255,.15),rgba(240,248,255,.15)),url('{data_uri('login')}') center/cover fixed no-repeat}}
-    .block-container{{max-width:1150px;padding-top:35px}}
+    [data-testid="stSidebar"]{{display:none!important}}
+    .stApp{{background:linear-gradient(90deg,rgba(243,249,253,.80),rgba(243,249,253,.34)),url('{data_uri('login')}') center/cover fixed no-repeat!important}}
+    .block-container{{max-width:1180px!important;padding:28px 42px!important;margin:auto!important}}
+    [data-testid="stForm"]{{max-width:420px!important;margin:0 auto!important;padding:26px 28px 24px!important;border-radius:15px!important;background:rgba(255,255,255,.965)!important;box-shadow:0 18px 45px rgba(22,62,91,.15)!important;border:1px solid rgba(214,230,241,.95)!important}}
     </style>""",unsafe_allow_html=True)
-    a,b,c=st.columns([1.1,1.15,1.1])
-    with a:
-        st.image(asset_image('danantara'),width=180)
-        st.markdown("<div style='margin-top:280px;color:#13549a;font-size:20px;font-weight:700'>INTEGRATED MARITIME SOLUTIONS<br>FOR A SUSTAINABLE INDONESIA</div>",unsafe_allow_html=True)
-    with b:
-        st.markdown("<div style='height:100px'></div>",unsafe_allow_html=True)
+    left,center,right=st.columns([1.0,1.08,1.0],gap="large")
+    with left:
+        st.image(asset_image('danantara'),width=155)
+        st.markdown("<div style='height:300px'></div><div style='color:#1f64a0;font-size:16px;line-height:1.35;font-weight:700;letter-spacing:.02em'>INTEGRATED MARITIME SOLUTIONS<br>FOR A SUSTAINABLE INDONESIA</div>",unsafe_allow_html=True)
+    with center:
+        st.markdown("<div style='height:88px'></div>",unsafe_allow_html=True)
         with st.form("login"):
-            st.markdown("<div style='text-align:center;font-size:13px;letter-spacing:2px'>SELAMAT DATANG DI</div><h2 style='text-align:center;margin-top:5px'>Sistem Master Material<br>PT BIMA</h2><p style='text-align:center;color:#71879a'>Silakan masuk menggunakan username dan password Anda</p>",unsafe_allow_html=True)
+            st.markdown("<div class='mm-login-brand'>SELAMAT DATANG DI</div><div class='mm-login-title'>Sistem Master Material<br>PT BIMA</div><div class='mm-login-sub'>Masuk menggunakan akun yang terdaftar untuk mengakses permintaan, approval, dan dokumen master material.</div>",unsafe_allow_html=True)
             u=st.text_input("Username",placeholder="Masukkan username")
             p=st.text_input("Password",type="password",placeholder="Masukkan password")
-            remember=st.checkbox("Remember me")
-            go=st.form_submit_button("Masuk  →",use_container_width=True,type="primary")
+            remember=st.checkbox("Ingat akun saya")
+            go=st.form_submit_button("Masuk ke Sistem",use_container_width=True,type="primary")
             if go:
-                user=verify_login(u,p)
-                if user:
-                    st.session_state.user=user
+                login_user=verify_login(u,p)
+                if login_user:
+                    st.session_state.user=login_user
                     st.session_state.page="Dashboard"
                     st.rerun()
                 else:
                     login_df = ws_df(LOGIN_SHEET)
                     if login_df.empty:
-                        st.error("Data login belum dapat dibaca dari Google Sheets. Periksa koneksi Service Account dan nama sheet 'Data Username + Password'.")
+                        st.error("Data login belum dapat dibaca. Periksa akses Service Account dan sheet 'Data Username + Password'.")
                     else:
                         st.error("Username atau password tidak valid.")
-        ok, msg = sheets_status()
-        if ok:
-            st.success(msg, icon="✅")
-        else:
-            st.warning(msg, icon="⚠️")
-        st.caption(f"Sumber data login: {LOGIN_SHEET} | Spreadsheet ID: {SHEET_ID}")
-    with c:
-        st.image(asset_image('bima'),width=180)
-        st.markdown("<div style='margin-top:310px;text-align:right;color:#3f7eaa;font-size:13px'>SISTEM<br><b>MASTER MATERIAL</b><br>PT BIMA</div>",unsafe_allow_html=True)
+            st.markdown("<div class='mm-login-foot'>Akses sistem dibatasi berdasarkan role pengguna.</div>",unsafe_allow_html=True)
+    with right:
+        st.markdown("<div style='display:flex;justify-content:flex-end'>",unsafe_allow_html=True)
+        st.image(asset_image('bima'),width=165)
+        st.markdown("</div><div style='height:320px'></div><div style='text-align:right;color:#4d7fa5;font-size:11px;line-height:1.4'>SISTEM<br><b>MASTER MATERIAL</b><br>PT BIMA</div>",unsafe_allow_html=True)
     st.stop()
 
 if "user" not in st.session_state: login_page()
@@ -422,7 +466,19 @@ def activity_table(df,limit=8):
         </div>""",unsafe_allow_html=True)
 
 
-def page_title(title,sub): st.markdown(f"<div style='font-size:10px;color:#8aa0b2;margin-bottom:5px'>Dashboard &nbsp;›&nbsp; {title}</div><div class='mm-title'>{title}</div><div class='mm-sub'>{sub}</div>",unsafe_allow_html=True)
+def page_title(title,sub):
+    st.markdown(f"<div class='mm-breadcrumb'>Dashboard &nbsp;›&nbsp; {html.escape(str(title))}</div><div class='mm-title'>{html.escape(str(title))}</div><div class='mm-sub'>{html.escape(str(sub))}</div>",unsafe_allow_html=True)
+
+def section_head(number,title,subtitle=""):
+    sub=f"<div style='font-size:9px;color:#8195a6;font-weight:500;margin-top:2px'>{html.escape(str(subtitle))}</div>" if subtitle else ""
+    st.markdown(f"<div class='mm-section-head'><span class='mm-section-index'>{number}</span><div>{html.escape(str(title))}{sub}</div></div>",unsafe_allow_html=True)
+
+def summary_grid(items):
+    colors=['#0b78c8','#f0a314','#16a36a','#e74f4f']
+    cards=[]
+    for idx,(label,value,note) in enumerate(items):
+        cards.append(f"<div class='mm-summary' style='--accent:{colors[idx%len(colors)]}'><div class='mm-summary-label'>{html.escape(str(label))}</div><div class='mm-summary-value'>{html.escape(str(value))}</div><div class='mm-summary-note'>{html.escape(str(note))}</div></div>")
+    st.markdown("<div class='mm-summary-grid'>"+"".join(cards)+"</div>",unsafe_allow_html=True)
 
 def role_filtered(df):
     d=canonical(df)
@@ -533,119 +589,189 @@ if page=="Dashboard":
     """,unsafe_allow_html=True)
 
 elif page=="Form Permintaan Material":
-
-    page_title("Form Permintaan Master Material Baru","Lengkapi data dan material baru untuk diproses")
-    if level>0: st.info("Sesuai alur, pengajuan baru dilakukan oleh Pemohon. Anda tetap dapat melihat form, tetapi tombol kirim dinonaktifkan untuk role approver.")
+    page_title("Form Permintaan Master Material Baru","Pengajuan data material baru untuk proses review dan approval berjenjang")
+    st.markdown("<div class='mm-page-note'><div style='font-size:17px'>ⓘ</div><div><b>Lengkapi data secara konsisten.</b><br>Pastikan nama material, part number, lokasi SAP, dan URL dokumen pendukung sudah benar. URL dokumen wajib diisi dan lampiran TKDN tidak digunakan sesuai revisi alur sistem.</div></div>",unsafe_allow_html=True)
+    if level>0:
+        st.info("Role approver dapat melihat form, tetapi pengajuan baru hanya dapat dikirim oleh Pemohon.")
     with st.form("material_form",clear_on_submit=False):
-        st.markdown("### 1. Informasi Permohonan")
-        c1,c2,c3,c4=st.columns(4)
+        section_head("01","Informasi Permohonan","Identitas pemohon dan lokasi kebutuhan material")
+        c1,c2,c3,c4=st.columns(4,gap="medium")
         requester=c1.text_input("Nama Pemohon *",value=user.get('name',''))
         tgl=c2.date_input("Tanggal Pengajuan *",value=date.today())
         area=c3.selectbox("Area *",["Area 1","Area 2","Area 3","Area 4"],index=0)
         site=c4.text_input("Site *",placeholder="Contoh: SH01 - Site TPK Belawan")
-        st.markdown("### 2. Spesifikasi / Data Material")
-        c1,c2,c3=st.columns(3)
+
+        section_head("02","Spesifikasi Material","Identitas teknis material yang akan dibuat di SAP")
+        c1,c2,c3=st.columns(3,gap="medium")
         name=c1.text_input("Nama Barang / Material *",placeholder="Contoh: Bearing Ball 6305-2RS")
-        merk=c2.text_input("Merk / Brand *")
-        part=c3.text_input("Part Number *")
-        c1,c2,c3=st.columns(3)
+        merk=c2.text_input("Merk / Brand *",placeholder="Contoh: SKF")
+        part=c3.text_input("Part Number *",placeholder="Contoh: 6305-2RS")
+        c1,c2,c3=st.columns(3,gap="medium")
         mtype=c1.selectbox("Material Type *",["Spare Part","Consumable","Electrical","Mechanical","Instrument","Lainnya"])
         mgroup=c2.text_input("Material Group *",placeholder="Contoh: 99-11 Bearing/Roller")
         uom=c3.selectbox("UOM (Unit of Measure) *",["PCS","SET","UNIT","EA","M","KG","L"])
-        st.markdown("### 3. Lokasi SAP & Keterangan")
-        c1,c2,c3,c4=st.columns(4)
-        plant=c1.text_input("Kode Plant *"); profit=c2.text_input("Profit Center *"); storage=c3.text_input("Storage Location *"); valclass=c4.text_input("Valuation Class *")
-        desc=st.text_area("Deskripsi / Keterangan *",placeholder="Jelaskan fungsi, penggunaan, spesifikasi, dan kebutuhan material")
-        st.markdown("### 4. Lampiran Dokumentasi")
-        url=st.text_input("URL Dokumen / Link Manual *",placeholder="https://...",help="Wajib diisi sesuai revisi dokumen. Lampiran TKDN dihapus.")
-        upload=st.file_uploader("Upload Gambar / Foto Fisik Barang (opsional)",type=["png","jpg","jpeg","pdf"])
+
+        section_head("03","Lokasi SAP & Keterangan","Parameter organisasi dan deskripsi kebutuhan")
+        c1,c2,c3,c4=st.columns(4,gap="medium")
+        plant=c1.text_input("Kode Plant *",placeholder="Contoh: 5H01")
+        profit=c2.text_input("Profit Center *")
+        storage=c3.text_input("Storage Location *")
+        valclass=c4.text_input("Valuation Class *")
+        desc=st.text_area("Deskripsi / Keterangan *",placeholder="Jelaskan fungsi, penggunaan, spesifikasi, dan kebutuhan material secara ringkas tetapi lengkap")
+
+        section_head("04","Lampiran Dokumentasi","Dokumen teknis untuk mendukung validasi material")
+        url=st.text_input("URL Dokumen / Link Manual *",placeholder="https://...",help="Wajib diisi. Lampiran TKDN dihapus sesuai revisi dokumen.")
+        upload=st.file_uploader("Upload gambar / foto fisik barang (opsional)",type=["png","jpg","jpeg","pdf"])
         submitted=st.form_submit_button("Kirim Permintaan Master Material",type="primary",use_container_width=True,disabled=level>0)
         if submitted:
             required={"Site":site,"Nama Barang":name,"Merk":merk,"Part Number":part,"Material Group":mgroup,"Kode Plant":plant,"Profit Center":profit,"Storage Location":storage,"Valuation Class":valclass,"Deskripsi":desc,"URL Dokumen":url}
             missing=[k for k,v in required.items() if not str(v).strip()]
-            if missing: st.error("Kolom wajib belum lengkap: "+", ".join(missing))
-            elif not re.match(r'^https?://',url.strip()): st.error("URL Dokumen / Link Manual harus berupa tautan http/https yang valid.")
+            if missing:
+                st.error("Kolom wajib belum lengkap: "+", ".join(missing))
+            elif not re.match(r'^https?://',url.strip()):
+                st.error("URL Dokumen / Link Manual harus berupa tautan http/https yang valid.")
             else:
                 rid=f"REQ-{datetime.now():%Y%m%d-%H%M%S}"
                 rec={"ID Request":rid,"Tanggal":tgl.strftime('%d %b %Y'),"Pemohon":requester,"Area":area,"Site":site,"Nama Barang":name,"Merk/Brand":merk,"Part Number":part,"Material Type":mtype,"Material Group":mgroup,"UOM":uom,"Kode Plant":plant,"Profit Center":profit,"Storage Location":storage,"Valuation Class":valclass,"Deskripsi":desc,"URL Manual":url,"Status":"Pending L1","Created At":datetime.now().isoformat(timespec='seconds')}
                 if append_row(REQUEST_SHEET,rec):
-                    append_row(ACTIVITY_SHEET,rec); st.success(f"Permintaan {rid} berhasil dikirim dan masuk ke Pending L1.")
-    st.subheader("Daftar Permohonan Material"); activity_table(all_req,12)
+                    append_row(ACTIVITY_SHEET,rec)
+                    st.success(f"Permintaan {rid} berhasil dikirim dan masuk ke Pending L1.")
+    st.markdown("<div style='height:10px'></div><div class='mm-card-title'>Daftar Permohonan Material</div><div class='mm-card-sub'>Permohonan terbaru yang tercatat pada sistem</div>",unsafe_allow_html=True)
+    activity_table(all_req,12)
 
 elif page=="Riwayat Permohonan":
-    page_title("Riwayat Permohonan","Daftar seluruh permintaan material yang telah Anda ajukan")
-    c1,c2,c3,c4=st.columns(4)
-    status=c1.selectbox("Status",["Semua"]+STATUS_ORDER); area_f=c2.selectbox("Area/Site",["Semua"]+sorted([x for x in d['Area'].unique() if x])); search=c3.text_input("Nama Material",placeholder="Cari material..."); c4.write("")
+    page_title("Riwayat Permohonan","Pantau status dan progres seluruh permintaan material yang telah Anda ajukan")
+    with st.container(border=True):
+        st.markdown("<div class='mm-card-title'>Filter Permohonan</div><div class='mm-card-sub'>Gunakan filter untuk menemukan permintaan tertentu dengan lebih cepat.</div>",unsafe_allow_html=True)
+        c1,c2,c3=st.columns([1,1,1.7],gap="medium")
+        status=c1.selectbox("Status",["Semua"]+STATUS_ORDER)
+        area_opts=["Semua"]+sorted([x for x in d['Area'].unique() if x])
+        area_f=c2.selectbox("Area / Site",area_opts)
+        search=c3.text_input("Nama Material",placeholder="Cari nama material atau barang...")
     f=d.copy()
     if status!="Semua": f=f[f['Status']==status]
     if area_f!="Semua": f=f[f['Area']==area_f]
     if search: f=f[f['Nama Barang'].str.contains(search,case=False,na=False)]
-    k1,k2,k3,k4=st.columns(4)
-    for c,l,v in [(k1,"Total Permintaan",len(f)),(k2,"Pending Approval",f['Status'].str.contains('Pending',case=False).sum()),(k3,"Approved Final",f['Status'].str.contains('Approved Final',case=False).sum()),(k4,"Rejected",f['Status'].str.contains('Rejected',case=False).sum())]: c.metric(l,int(v))
+    summary_grid([
+        ("Total Permintaan",len(f),"Data sesuai filter"),
+        ("Pending Approval",int(f['Status'].str.contains('Pending',case=False,na=False).sum()),"Masih dalam proses"),
+        ("Approved Final",int(f['Status'].str.contains('Approved Final',case=False,na=False).sum()),"Selesai disetujui"),
+        ("Rejected",int(f['Status'].str.contains('Rejected',case=False,na=False).sum()),"Perlu tindak lanjut"),
+    ])
+    st.markdown("<div class='mm-card-title'>Daftar Riwayat</div><div class='mm-card-sub'>Status terakhir setiap permohonan material</div>",unsafe_allow_html=True)
     activity_table(f,50)
 
 elif page=="Approval Workspace":
-    page_title(f"Approval Material L{level}","Review data permohonan, beri catatan, lalu setujui atau tolak")
+    page_title(f"Approval Material L{level}","Review data permohonan, berikan catatan, kemudian setujui atau tolak permintaan")
     target=f"Pending L{level}"
     q=canonical(all_req); q=q[q['Status']==target]
-    if level in [1,2] and user.get('area') not in ['',None,'-']: q=q[(q['Area']==user['area']) | (q['Area']=='')]
-    if q.empty: st.success(f"Tidak ada permohonan {target} saat ini.")
+    if level in [1,2] and user.get('area') not in ['',None,'-']:
+        q=q[(q['Area']==user['area']) | (q['Area']=='')]
+    summary_grid([
+        ("Menunggu Review",len(q),target),
+        ("Area Kerja",user.get('area','-'),"Cakupan reviewer"),
+        ("Level Approval",f"L{level}","Tahap persetujuan"),
+        ("Reviewer",user.get('name','-'),"Akun aktif"),
+    ])
+    st.markdown("<div class='mm-page-note'><div style='font-size:17px'>✓</div><div><b>Checklist review.</b><br>Pastikan nama material, site, material group, deskripsi, dan dokumen pendukung konsisten sebelum memberikan keputusan.</div></div>",unsafe_allow_html=True)
+    if q.empty:
+        st.success(f"Tidak ada permohonan {target} saat ini.")
     for i,r in q.iterrows():
-        with st.expander(f"{r['ID Request']} | {r['Nama Barang']} | {r['Pemohon']}",expanded=False):
-            st.write(f"Site: {r['Site']}  |  Area: {r['Area']}  |  Material Group: {r['Material Group']}")
-            if r['Deskripsi']: st.write(r['Deskripsi'])
-            note=st.text_area("Catatan reviewer",key=f"note_{i}")
-            a,b=st.columns(2)
-            if a.button("Setujui",key=f"approve_{i}",type="primary",use_container_width=True):
+        with st.expander(f"{r['ID Request']}  •  {r['Nama Barang']}  •  {r['Pemohon']}",expanded=False):
+            st.markdown(f"""<div class='mm-info-list'>
+            <div class='mm-info-row'><span>Site / Area</span><span>{html.escape(str(r['Site']))} &nbsp;•&nbsp; {html.escape(str(r['Area']))}</span></div>
+            <div class='mm-info-row'><span>Material Group</span><span>{html.escape(str(r['Material Group']))}</span></div>
+            <div class='mm-info-row'><span>Deskripsi</span><span>{html.escape(str(r['Deskripsi'] or '-'))}</span></div>
+            </div>""",unsafe_allow_html=True)
+            note=st.text_area("Catatan reviewer",key=f"note_{i}",placeholder="Tambahkan catatan jika diperlukan. Catatan wajib saat menolak.")
+            a,b=st.columns(2,gap="medium")
+            if a.button("Setujui Permintaan",key=f"approve_{i}",type="primary",use_container_width=True):
                 new="Approved Final" if level==4 else f"Pending L{level+1}"
                 if update_request(r['ID Request'],{"Status":new,f"Catatan L{level}":note,f"Approver L{level}":user['name'],f"Tanggal Approval L{level}":datetime.now().strftime('%d %b %Y %H:%M')}):
                     append_row(APPROVAL_SHEET,{"ID Request":r['ID Request'],"Tahapan":f"Approval L{level}","Approver":user['name'],"Status":"Approved","Catatan":note,"Tanggal":datetime.now().isoformat(timespec='minutes')})
-                    append_row(ACTIVITY_SHEET,{**r.to_dict(),"Status":new}); st.success(f"Disetujui. Status menjadi {new}."); st.rerun()
-            if b.button("Tolak",key=f"reject_{i}",use_container_width=True):
-                if not note.strip(): st.warning("Catatan wajib diisi saat menolak.")
+                    append_row(ACTIVITY_SHEET,{**r.to_dict(),"Status":new})
+                    st.success(f"Disetujui. Status menjadi {new}.")
+                    st.rerun()
+            if b.button("Tolak Permintaan",key=f"reject_{i}",use_container_width=True):
+                if not note.strip():
+                    st.warning("Catatan wajib diisi saat menolak.")
                 elif update_request(r['ID Request'],{"Status":"Rejected",f"Catatan L{level}":note,f"Approver L{level}":user['name']}):
-                    append_row(APPROVAL_SHEET,{"ID Request":r['ID Request'],"Tahapan":f"Approval L{level}","Approver":user['name'],"Status":"Rejected","Catatan":note,"Tanggal":datetime.now().isoformat(timespec='minutes')}); st.rerun()
+                    append_row(APPROVAL_SHEET,{"ID Request":r['ID Request'],"Tahapan":f"Approval L{level}","Approver":user['name'],"Status":"Rejected","Catatan":note,"Tanggal":datetime.now().isoformat(timespec='minutes')})
+                    st.rerun()
 
 elif page=="Dokumen Persetujuan":
-    page_title("Dokumen Persetujuan","Dokumen approval yang telah mencapai persetujuan final")
+    page_title("Dokumen Persetujuan","Akses dokumen permintaan yang telah menyelesaikan seluruh tahapan approval")
     approved=canonical(all_req); approved=approved[approved['Status'].str.contains('Approved Final',case=False,na=False)]
-    if approved.empty: st.info("Belum ada dokumen persetujuan final.")
+    if approved.empty:
+        st.info("Belum ada dokumen persetujuan final.")
     else:
-        ids=approved['ID Request'].tolist(); rid=st.selectbox("Pilih dokumen",ids); r=approved[approved['ID Request']==rid].iloc[0]
-        left,mid,right=st.columns([1,2,1])
+        with st.container(border=True):
+            c1,c2=st.columns([2.3,1],gap="medium")
+            ids=approved['ID Request'].tolist()
+            rid=c1.selectbox("Pilih dokumen persetujuan",ids)
+            c2.markdown("<div style='padding-top:27px;color:#71899d;font-size:10px'>Hanya dokumen berstatus <b style='color:#16a36a'>Approved Final</b> yang ditampilkan.</div>",unsafe_allow_html=True)
+        r=approved[approved['ID Request']==rid].iloc[0]
+        left,mid,right=st.columns([.9,2.2,1.0],gap="medium")
         with left:
-            st.markdown(f"<div class='mm-card'><b>{rid}</b><br>{r['Nama Barang']}<br><br>{status_badge(r['Status'])}</div>",unsafe_allow_html=True)
+            st.markdown(f"""<div class='mm-card'>
+            <div class='mm-card-title'>Dokumen Aktif</div><div class='mm-card-sub'>Ringkasan permintaan</div>
+            <div style='font-size:13px;font-weight:800;color:#0b6fbd'>{html.escape(str(rid))}</div>
+            <div style='font-size:11px;color:#355b78;margin:6px 0 12px;line-height:1.45'>{html.escape(str(r['Nama Barang']))}</div>
+            {status_badge(r['Status'])}
+            </div>""",unsafe_allow_html=True)
         with mid:
-            paper=asset_image('paper').convert('RGB').resize((760,1075))
-            draw=ImageDraw.Draw(paper)
-            try: font=ImageFont.truetype("DejaVuSans.ttf",20); small=ImageFont.truetype("DejaVuSans.ttf",15); bold=ImageFont.truetype("DejaVuSans-Bold.ttf",24)
-            except: font=small=bold=None
-            draw.text((380,105),"DOKUMEN PERSETUJUAN\nMASTER MATERIAL SAP",anchor="ma",align="center",fill="#124f89",font=bold)
-            draw.text((380,165),f"No. {rid}",anchor="ma",fill="#18324b",font=font)
-            y=245
-            for label,val in [("Tanggal Pengajuan",r['Tanggal']),("Pemohon",r['Pemohon']),("Site",r['Site']),("Nama Barang",r['Nama Barang']),("Material Group",r['Material Group']),("Deskripsi",r['Deskripsi'] or '-'),("Status",r['Status'])]:
-                draw.text((85,y),label,fill="#314b60",font=small); draw.text((280,y),str(val)[:55],fill="#172f43",font=small); y+=42
-            draw.text((85,620),"RIWAYAT PERSETUJUAN",fill="#124f89",font=font)
-            steps=["Submit Request","Approval L1","Approval L2","Approval L3","Approval L4"]
-            for j,s in enumerate(steps): draw.text((100,670+j*48),f"{j+1}. {s}",fill="#18324b",font=small); draw.text((480,670+j*48),"Approved",fill="#198754",font=small)
-            buf=io.BytesIO(); paper.save(buf,format="PDF",resolution=150); pdf=buf.getvalue()
-            st.image(paper,use_container_width=True)
+            with st.container(border=True):
+                st.markdown("<div class='mm-card-title'>Preview Dokumen</div><div class='mm-card-sub'>Dokumen persetujuan Master Material SAP</div>",unsafe_allow_html=True)
+                paper=asset_image('paper').convert('RGB').resize((760,1075))
+                draw=ImageDraw.Draw(paper)
+                try: font=ImageFont.truetype("DejaVuSans.ttf",20); small=ImageFont.truetype("DejaVuSans.ttf",15); bold=ImageFont.truetype("DejaVuSans-Bold.ttf",24)
+                except: font=small=bold=None
+                draw.text((380,105),"DOKUMEN PERSETUJUAN\nMASTER MATERIAL SAP",anchor="ma",align="center",fill="#124f89",font=bold)
+                draw.text((380,165),f"No. {rid}",anchor="ma",fill="#18324b",font=font)
+                y=245
+                for label,val in [("Tanggal Pengajuan",r['Tanggal']),("Pemohon",r['Pemohon']),("Site",r['Site']),("Nama Barang",r['Nama Barang']),("Material Group",r['Material Group']),("Deskripsi",r['Deskripsi'] or '-'),("Status",r['Status'])]:
+                    draw.text((85,y),label,fill="#314b60",font=small); draw.text((280,y),str(val)[:55],fill="#172f43",font=small); y+=42
+                draw.text((85,620),"RIWAYAT PERSETUJUAN",fill="#124f89",font=font)
+                steps=["Submit Request","Approval L1","Approval L2","Approval L3","Approval L4"]
+                for j,s in enumerate(steps):
+                    draw.text((100,670+j*48),f"{j+1}. {s}",fill="#18324b",font=small); draw.text((480,670+j*48),"Approved",fill="#198754",font=small)
+                buf=io.BytesIO(); paper.save(buf,format="PDF",resolution=150); pdf=buf.getvalue()
+                st.image(paper,use_container_width=True)
         with right:
-            st.markdown(f"<div class='mm-card'><b>Informasi Dokumen</b><br><br>No Request<br><b>{rid}</b><br><br>Nama Material<br><b>{r['Nama Barang']}</b><br><br>Tanggal Pengajuan<br><b>{r['Tanggal']}</b><br><br>Status<br>{status_badge(r['Status'])}</div>",unsafe_allow_html=True)
+            st.markdown(f"""<div class='mm-card'>
+            <div class='mm-card-title'>Informasi Dokumen</div><div class='mm-card-sub'>Metadata dokumen approval</div>
+            <div class='mm-info-list'>
+              <div class='mm-info-row' style='grid-template-columns:1fr'><span>No Request</span><span>{html.escape(str(rid))}</span></div>
+              <div class='mm-info-row' style='grid-template-columns:1fr'><span>Nama Material</span><span>{html.escape(str(r['Nama Barang']))}</span></div>
+              <div class='mm-info-row' style='grid-template-columns:1fr'><span>Tanggal Pengajuan</span><span>{html.escape(str(r['Tanggal']))}</span></div>
+              <div class='mm-info-row' style='grid-template-columns:1fr'><span>Status</span><span>{status_badge(r['Status'])}</span></div>
+            </div></div>""",unsafe_allow_html=True)
             st.download_button("Download PDF",pdf,file_name=f"{rid}_Dokumen_Persetujuan.pdf",mime="application/pdf",use_container_width=True,type="primary")
 
 elif page=="Profile":
-    page_title("Profile","Informasi akun Anda pada Sistem Master Material SAP")
-    a,b=st.columns(2)
+    page_title("Profile","Informasi akun dan ringkasan aktivitas pengguna pada Sistem Master Material SAP")
+    initials=''.join([x[:1] for x in str(user.get('name','U')).split()[:2]]).upper() or 'U'
+    a,b=st.columns([1.15,1],gap="medium")
     with a:
-        st.markdown("<div class='mm-card'><h3>Informasi Pengguna</h3>",unsafe_allow_html=True)
-        st.write("Nama",user.get('name','-')); st.write("Email",user.get('email','-')); st.write("Jabatan / Role",role); st.write("Area Kerja",user.get('area','-')); st.write("Username",user.get('username','-')); st.markdown("</div>",unsafe_allow_html=True)
+        st.markdown(f"""<div class='mm-card'>
+        <div class='mm-profile-hero'><div class='mm-profile-avatar'>{html.escape(initials)}</div><div><div class='mm-profile-name'>{html.escape(str(user.get('name','-')))}</div><div class='mm-profile-role'>{html.escape(str(role))}</div></div></div>
+        <div class='mm-info-list'>
+          <div class='mm-info-row'><span>Email</span><span>{html.escape(str(user.get('email','-')))}</span></div>
+          <div class='mm-info-row'><span>Username</span><span>{html.escape(str(user.get('username','-')))}</span></div>
+          <div class='mm-info-row'><span>Area Kerja</span><span>{html.escape(str(user.get('area','-')))}</span></div>
+          <div class='mm-info-row'><span>Hak Akses</span><span>{html.escape(str(role))}</span></div>
+        </div></div>""",unsafe_allow_html=True)
     with b:
-        st.markdown("<div class='mm-card'><h3>Pengaturan Akun</h3><b>Ubah Password</b><p class='mm-muted'>Perubahan password dilakukan pada sheet Data Username + Password oleh administrator.</p><b>Bahasa</b><p>Bahasa Indonesia</p><b>Tampilan</b><p>Terang</p></div>",unsafe_allow_html=True)
-    st.subheader("Ringkasan Aktivitas Anda")
-    c1,c2,c3,c4=st.columns(4)
+        st.markdown("""<div class='mm-card'><div class='mm-card-title'>Pengaturan Akun</div><div class='mm-card-sub'>Preferensi dan pengelolaan akses pengguna</div>
+        <div class='mm-setting-row'><div class='mm-setting-icon'>🔒</div><div class='mm-setting-main'><b>Ubah Password</b><div>Dikelola oleh administrator pada Data Username + Password</div></div><div class='mm-setting-value'>Admin</div></div>
+        <div class='mm-setting-row'><div class='mm-setting-icon'>文</div><div class='mm-setting-main'><b>Bahasa</b><div>Bahasa antarmuka sistem</div></div><div class='mm-setting-value'>Indonesia</div></div>
+        <div class='mm-setting-row'><div class='mm-setting-icon'>☀</div><div class='mm-setting-main'><b>Tampilan</b><div>Mode antarmuka saat ini</div></div><div class='mm-setting-value'>Terang</div></div>
+        </div>""",unsafe_allow_html=True)
     if level==0:
-        metrics=[("Total Permintaan",len(d)),("Menunggu Approval",d['Status'].str.contains('Pending',case=False).sum()),("Disetujui",d['Status'].str.contains('Approved',case=False).sum()),("Ditolak",d['Status'].str.contains('Rejected',case=False).sum())]
+        metrics=[("Total Permintaan",len(d),"Pengajuan Anda"),("Menunggu Approval",int(d['Status'].str.contains('Pending',case=False,na=False).sum()),"Masih diproses"),("Disetujui",int(d['Status'].str.contains('Approved',case=False,na=False).sum()),"Sudah selesai"),("Ditolak",int(d['Status'].str.contains('Rejected',case=False,na=False).sum()),"Perlu tindak lanjut")]
     else:
-        target=f"Pending L{level}"; metrics=[("Perlu Direview",d['Status'].eq(target).sum()),("Approved Final",d['Status'].str.contains('Approved Final',case=False).sum()),("Total Data",len(d)),("Role Level",level)]
-    for c,(lab,val) in zip([c1,c2,c3,c4],metrics): c.metric(lab,int(val))
+        target=f"Pending L{level}"
+        metrics=[("Perlu Direview",int(d['Status'].eq(target).sum()),target),("Approved Final",int(d['Status'].str.contains('Approved Final',case=False,na=False).sum()),"Selesai proses"),("Total Data",len(d),"Dalam cakupan akses"),("Role Level",f"L{level}","Tahap approval")]
+    st.markdown("<div style='height:10px'></div><div class='mm-card-title'>Ringkasan Aktivitas Anda</div><div class='mm-card-sub'>Statistik sesuai role dan hak akses akun aktif</div>",unsafe_allow_html=True)
+    summary_grid(metrics)
+
